@@ -453,10 +453,10 @@ export default function OfferDetail() {
                         {doc.file_name || doc.name || `Document #${doc.id}`}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {doc.is_sensitive && (
+                        {doc.is_encrypted && (
                           <span className="inline-flex items-center gap-1 text-orange-500">
                             <AlertTriangle size={11} />
-                            Sensible
+                            Chiffré (AES-256)
                           </span>
                         )}
                       </p>
