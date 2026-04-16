@@ -132,7 +132,7 @@ export default function AuditLog() {
                       {formatDateTime(log.timestamp || log.created_at)}
                     </td>
                     <td className="px-5 py-3 text-sm text-gray-900">
-                      {log.user_email || log.user || '—'}
+                      {log.user_email || log.user?.email || log.user?.full_name || '—'}
                     </td>
                     <td className="px-5 py-3">
                       <Badge
@@ -148,9 +148,11 @@ export default function AuditLog() {
                       {log.resource_id || log.object_id || '—'}
                     </td>
                     <td className="px-5 py-3 text-sm text-gray-600 max-w-xs truncate">
-                      {log.details || log.changes
-                        ? JSON.stringify(log.details || log.changes)
-                        : '—'}
+                      {(() => {
+                        const val = log.details ?? log.changes;
+                        if (val == null) return '—';
+                        try { return JSON.stringify(val); } catch { return '—'; }
+                      })()}
                     </td>
                   </tr>
                 ))}
