@@ -65,15 +65,15 @@ class TestOfferListCreate:
         }, format='json')
         assert response.status_code == 403
 
-    def test_list_offers(self, api_client, viewer_user, draft_offer):
-        api_client.force_authenticate(user=viewer_user)
+    def test_list_offers(self, api_client, manager_user, draft_offer):
+        api_client.force_authenticate(user=manager_user)
         url = reverse('offers:offer-list')
         response = api_client.get(url)
         assert response.status_code == 200
         assert response.data['count'] >= 1
 
-    def test_list_offers_filter_by_status(self, api_client, viewer_user, draft_offer):
-        api_client.force_authenticate(user=viewer_user)
+    def test_list_offers_filter_by_status(self, api_client, manager_user, draft_offer):
+        api_client.force_authenticate(user=manager_user)
         url = reverse('offers:offer-list')
         response = api_client.get(url, {'status': 'DRAFT'})
         assert response.status_code == 200
