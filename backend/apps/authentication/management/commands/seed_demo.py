@@ -68,10 +68,14 @@ class Command(BaseCommand):
         users = {}
 
         specs = [
-            dict(email='admin@nplus1.ma',   full_name='Karim Benali',   role='ADMIN',   department='DSI',         password='Admin1234!'),
-            dict(email='manager@nplus1.ma',  full_name='Nadia Ouali',    role='MANAGER', department='Achats',      password='Manager1234!'),
-            dict(email='analyst@nplus1.ma',  full_name='Youssef Tahiri', role='ANALYST', department='Achats',      password='Analyst1234!'),
-            dict(email='viewer@nplus1.ma',   full_name='Sara Idrissi',   role='VIEWER',  department='Direction',   password='Viewer1234!'),
+            dict(email='admin@nplus1.ma', full_name='Karim Benali',
+                 role='ADMIN', department='DSI', password='Admin1234!'),
+            dict(email='manager@nplus1.ma', full_name='Nadia Ouali',
+                 role='MANAGER', department='Achats', password='Manager1234!'),
+            dict(email='analyst@nplus1.ma', full_name='Youssef Tahiri',
+                 role='ANALYST', department='Achats', password='Analyst1234!'),
+            dict(email='viewer@nplus1.ma', full_name='Sara Idrissi',
+                 role='VIEWER', department='Direction', password='Viewer1234!'),
         ]
 
         for s in specs:
@@ -235,12 +239,24 @@ class Command(BaseCommand):
         self.stdout.write('Creating candidates...')
 
         specs = [
-            dict(company_name='Datatech Solutions SARL',   contact_email='contact@datatech.demo.ma',   contact_phone='+212 522 111 222', address='Casablanca Technopark, Bloc C', registration_number='RC 123456'),
-            dict(company_name='IberiaTech Maroc SA',        contact_email='offres@iberiatech.demo.ma',  contact_phone='+212 522 333 444', address='Boulevard Zerktouni, Casablanca', registration_number='RC 654321'),
-            dict(company_name='Atlas Infra & Services',     contact_email='ao@atlas-infra.demo.ma',     contact_phone='+212 537 555 666', address='Avenue Annakhil, Hay Riad, Rabat', registration_number='RC 789012'),
-            dict(company_name='MaghrebIT Engineering',      contact_email='direction@maghrebit.demo.ma', contact_phone='+212 522 777 888', address='Quartier des Affaires, Casablanca', registration_number='RC 345678'),
-            dict(company_name='ProSystems Industrie',       contact_email='ao@prosystems.demo.ma',       contact_phone='+212 522 999 000', address='Zone Industrielle Sidi Bernoussi', registration_number='RC 901234'),
-            dict(company_name='CleanRoom Expert SARL',      contact_email='contact@cleanroom.demo.ma',   contact_phone='+212 661 222 333', address='Rue Ibn Khaldoun, Casablanca', registration_number='RC 567890'),
+            dict(company_name='Datatech Solutions SARL', contact_email='contact@datatech.demo.ma',
+                 contact_phone='+212 522 111 222', address='Casablanca Technopark, Bloc C',
+                 registration_number='RC 123456'),
+            dict(company_name='IberiaTech Maroc SA', contact_email='offres@iberiatech.demo.ma',
+                 contact_phone='+212 522 333 444', address='Boulevard Zerktouni, Casablanca',
+                 registration_number='RC 654321'),
+            dict(company_name='Atlas Infra & Services', contact_email='ao@atlas-infra.demo.ma',
+                 contact_phone='+212 537 555 666', address='Avenue Annakhil, Hay Riad, Rabat',
+                 registration_number='RC 789012'),
+            dict(company_name='MaghrebIT Engineering', contact_email='direction@maghrebit.demo.ma',
+                 contact_phone='+212 522 777 888', address='Quartier des Affaires, Casablanca',
+                 registration_number='RC 345678'),
+            dict(company_name='ProSystems Industrie', contact_email='ao@prosystems.demo.ma',
+                 contact_phone='+212 522 999 000', address='Zone Industrielle Sidi Bernoussi',
+                 registration_number='RC 901234'),
+            dict(company_name='CleanRoom Expert SARL', contact_email='contact@cleanroom.demo.ma',
+                 contact_phone='+212 661 222 333', address='Rue Ibn Khaldoun, Casablanca',
+                 registration_number='RC 567890'),
         ]
 
         candidates = []
@@ -266,14 +282,19 @@ class Command(BaseCommand):
         self.stdout.write('Creating submissions...')
 
         analyst = users['ANALYST']
-        now = timezone.now()
 
         # offers[0] = AWARDED (3 submissions, all scored, 1 accepted)
         awarded_offer = offers[0]
         awarded_data = [
-            dict(candidate=candidates[0], technical_score=88.5,  financial_score=82.0, status='ACCEPTED', notes='Offre la mieux disante. Délais respectés. Références solides.', evaluated_by=analyst),
-            dict(candidate=candidates[1], technical_score=76.0,  financial_score=91.0, status='REJECTED', notes='Bonne offre financière mais solution technique insuffisante.', evaluated_by=analyst),
-            dict(candidate=candidates[3], technical_score=71.5,  financial_score=78.5, status='REJECTED', notes='Dossier incomplet. Absence des certificats HPE requis.', evaluated_by=analyst),
+            dict(candidate=candidates[0], technical_score=88.5, financial_score=82.0,
+                 status='ACCEPTED', notes='Offre la mieux disante. Délais respectés.',
+                 evaluated_by=analyst),
+            dict(candidate=candidates[1], technical_score=76.0, financial_score=91.0,
+                 status='REJECTED', notes='Bonne offre financière mais technique insuffisante.',
+                 evaluated_by=analyst),
+            dict(candidate=candidates[3], technical_score=71.5, financial_score=78.5,
+                 status='REJECTED', notes='Dossier incomplet. Certificats HPE manquants.',
+                 evaluated_by=analyst),
         ]
         for d in awarded_data:
             sub, created = Submission.objects.get_or_create(
@@ -286,9 +307,14 @@ class Command(BaseCommand):
         # offers[1] = EVALUATION (3 submissions, 2 scored)
         eval_offer = offers[1]
         eval_data = [
-            dict(candidate=candidates[0], technical_score=83.0,  financial_score=79.5, status='UNDER_REVIEW', notes='Analyse en cours. Solution Cisco validée techniquement.', evaluated_by=analyst),
-            dict(candidate=candidates[2], technical_score=91.0,  financial_score=None, status='UNDER_REVIEW', notes='Meilleure solution technique. Chiffrage financier attendu.', evaluated_by=analyst),
-            dict(candidate=candidates[4], technical_score=None,   financial_score=None, status='RECEIVED',    notes='', evaluated_by=None),
+            dict(candidate=candidates[0], technical_score=83.0, financial_score=79.5,
+                 status='UNDER_REVIEW', notes='Analyse en cours. Solution Cisco validée.',
+                 evaluated_by=analyst),
+            dict(candidate=candidates[2], technical_score=91.0, financial_score=None,
+                 status='UNDER_REVIEW', notes='Meilleure solution technique. Chiffrage attendu.',
+                 evaluated_by=analyst),
+            dict(candidate=candidates[4], technical_score=None, financial_score=None,
+                 status='RECEIVED', notes='', evaluated_by=None),
         ]
         for d in eval_data:
             sub, created = Submission.objects.get_or_create(

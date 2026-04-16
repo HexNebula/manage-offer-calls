@@ -16,7 +16,10 @@ class OfferCallSerializer(serializers.ModelSerializer):
             'evaluation_deadline', 'created_by', 'assigned_to', 'assigned_to_id',
             'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'reference_number', 'status', 'published_at', 'created_by', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id', 'reference_number', 'status', 'published_at',
+            'created_by', 'created_at', 'updated_at',
+        ]
 
     def create(self, validated_data):
         assigned_to_id = validated_data.pop('assigned_to_id', None)

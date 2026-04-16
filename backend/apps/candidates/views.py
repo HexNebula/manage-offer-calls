@@ -2,7 +2,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
 
 from .models import Candidate, Submission
 from .serializers import CandidateSerializer, SubmissionSerializer, SubmissionEvaluateSerializer
@@ -150,7 +149,10 @@ class SubmissionListCreateView(APIView):
                     recipient=offer.assigned_to,
                     offer_call=offer,
                     type='SUBMISSION_RECEIVED',
-                    message=f'New submission received for {offer.reference_number} from {submission.candidate.company_name}.',
+                    message=(
+                        f'New submission received for {offer.reference_number} '
+                        f'from {submission.candidate.company_name}.'
+                    ),
                 )
             return Response(SubmissionSerializer(submission).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

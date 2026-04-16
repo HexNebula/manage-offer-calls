@@ -12,7 +12,6 @@ class Command(BaseCommand):
 
         now = timezone.now()
         window_48h = now + timedelta(hours=48)
-        window_24h = now + timedelta(hours=24)
 
         active_statuses = ('PUBLISHED', 'EVALUATION')
         offers = OfferCall.objects.filter(status__in=active_statuses, assigned_to__isnull=False)

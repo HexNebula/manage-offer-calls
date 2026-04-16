@@ -12,7 +12,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import (
     SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
 )
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER
 
 from apps.authentication.permissions import IsAnalystOrAbove
 from apps.offers.models import OfferCall
@@ -247,8 +247,10 @@ class OfferDetailReportView(APIView):
             ['Category', offer.get_category_display()],
             ['Budget Estimate', f'{offer.budget_estimate:,.2f}' if offer.budget_estimate else 'N/A'],
             ['Published At', offer.published_at.strftime('%Y-%m-%d %H:%M UTC') if offer.published_at else 'N/A'],
-            ['Submission Deadline', offer.submission_deadline.strftime('%Y-%m-%d %H:%M UTC') if offer.submission_deadline else 'N/A'],
-            ['Evaluation Deadline', offer.evaluation_deadline.strftime('%Y-%m-%d %H:%M UTC') if offer.evaluation_deadline else 'N/A'],
+            ['Submission Deadline',
+             offer.submission_deadline.strftime('%Y-%m-%d %H:%M UTC') if offer.submission_deadline else 'N/A'],
+            ['Evaluation Deadline',
+             offer.evaluation_deadline.strftime('%Y-%m-%d %H:%M UTC') if offer.evaluation_deadline else 'N/A'],
             ['Created By', offer.created_by.full_name],
             ['Assigned To', offer.assigned_to.full_name if offer.assigned_to else 'Unassigned'],
             ['Created At', offer.created_at.strftime('%Y-%m-%d %H:%M UTC')],
