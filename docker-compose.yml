@@ -1,0 +1,117 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: offres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-offres_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-offres_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: offres_backend
+    restart: unless-stopped
+    command: >
+      sh -c "until python -c 'import socket; socket.getaddrinfo(\"db\", 5432)' 2>/dev/null;
+             do echo 'Waiting for DB DNS...'; sleep 2; done &&
+             python manage.py makemigrations --noinput &&
+             python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-False}
+      DB_NAME: ${DB_NAME:-offres_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      DOCUMENT_ENCRYPTION_KEY: ${DOCUMENT_ENCRYPTION_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 8000)); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: offres_scheduler
+    restart: unless-stopped
+    command: >
+      sh -c "until python -c 'import socket; socket.getaddrinfo(\"db\", 5432)' 2>/dev/null;
+             do echo 'Waiting for DB DNS...'; sleep 2; done &&
+             echo 'Scheduler started. Running check_deadlines every hour.' &&
+             while true; do
+               python manage.py check_deadlines;
+               sleep 3600;
+             done"
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-False}
+      DB_NAME: ${DB_NAME:-offres_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      DOCUMENT_ENCRYPTION_KEY: ${DOCUMENT_ENCRYPTION_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: offres_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: offres_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - media_data:/app/media:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  media_data:
