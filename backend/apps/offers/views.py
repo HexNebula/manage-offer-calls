@@ -140,19 +140,28 @@ class OfferDetailView(APIView):
             return Response(OfferCallSerializer(updated_offer).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
-        if request.user.role not in ('MANAGER', 'ADMIN'):
-            return Response({'error': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
-        offer = self.get_object(pk)
-        if not offer:
+
+class OfferCancelView(APIView):
+    permission_classes = [IsManagerOrAdmin]
+
+    def post(self, request, pk):
+        try:
+            offer = OfferCall.objects.get(pk=pk)
+        except OfferCall.DoesNotExist:
             return Response({'error': 'Offer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if offer.status in ('CANCELLED', 'AWARDED'):
+            return Response(
+                {'error': f'Offer is already {offer.status}.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         offer.status = 'CANCELLED'
         offer.save(update_fields=['status'])
         create_audit_log(
             user=request.user,
-            action='DELETE',
+            action='UPDATE',
             resource_type='OfferCall',
             resource_id=offer.id,
             changes={'status': 'CANCELLED'},

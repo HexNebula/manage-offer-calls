@@ -17,8 +17,8 @@ export const offersService = {
     return api.patch(`/offers/${id}/`, data).then((r) => r.data);
   },
 
-  deleteOffer(id) {
-    return api.delete(`/offers/${id}/`).then((r) => r.data);
+  cancelOffer(id) {
+    return api.post(`/offers/${id}/cancel/`).then((r) => r.data);
   },
 
   publishOffer(id) {
