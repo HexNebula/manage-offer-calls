@@ -54,6 +54,7 @@ class LoginView(APIView):
             secure=not __import__('django.conf', fromlist=['settings']).settings.DEBUG,
             samesite='Lax',
             max_age=7 * 24 * 60 * 60,
+            path='/api/auth/',
         )
 
         return response
@@ -79,6 +80,7 @@ class RefreshView(APIView):
                 secure=not __import__('django.conf', fromlist=['settings']).settings.DEBUG,
                 samesite='Lax',
                 max_age=7 * 24 * 60 * 60,
+                path='/api/auth/',
             )
             return response
         except (TokenError, InvalidToken) as e:
@@ -98,7 +100,7 @@ class LogoutView(APIView):
                 pass
 
         response = Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
-        response.delete_cookie('refresh_token')
+        response.delete_cookie('refresh_token', path='/api/auth/')
         return response
 
 
