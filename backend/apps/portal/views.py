@@ -4,6 +4,8 @@ import uuid
 
 from django.conf import settings
 from django.utils import timezone
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
@@ -49,6 +51,7 @@ class PublicSubmitView(APIView):
     authentication_classes = []
     parser_classes = [MultiPartParser, FormParser]
 
+    @method_decorator(ratelimit(key='ip', rate='5/h', method='POST', block=True))
     def post(self, request, pk):
         # 1. Validate the offer exists and is open
         try:
