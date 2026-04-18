@@ -66,8 +66,7 @@ services:
              do echo 'Waiting for DB DNS...'; sleep 2; done &&
              echo 'Scheduler started. Running check_deadlines every hour.' &&
              while true; do
-               python manage.py check_deadlines;
-               sleep 3600;
+               python manage.py check_deadlines && sleep 3600 || sleep 60;
              done"
     environment:
       SECRET_KEY: ${SECRET_KEY}
@@ -79,6 +78,11 @@ services:
       DB_PORT: 5432
       DOCUMENT_ENCRYPTION_KEY: ${DOCUMENT_ENCRYPTION_KEY}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
     depends_on:
       db:
         condition: service_healthy
@@ -91,6 +95,12 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     depends_on:
       - backend
 
@@ -106,6 +116,11 @@ services:
     volumes:
       - media_data:/app/media:ro
       - ./nginx/certs:/etc/nginx/certs:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     depends_on:
       backend:
         condition: service_healthy
