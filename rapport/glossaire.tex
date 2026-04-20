@@ -1,0 +1,62 @@
+\chapter*{Glossaire}
+\addcontentsline{toc}{chapter}{Glossaire}
+
+\begin{description}[leftmargin=3cm, labelwidth=2.5cm, font=\bfseries]
+
+    \item[AES-256-GCM] \textit{Advanced Encryption Standard -- Galois/Counter Mode}.
+    Algorithme de chiffrement symétrique opérant sur des blocs de 128 bits avec une clé
+    de 256 bits. Le mode GCM assure simultanément la confidentialité et l'intégrité des
+    données via un tag d'authentification.
+
+    \item[API REST] \textit{Application Programming Interface -- Representational State Transfer}.
+    Interface de programmation exposant des ressources via des URLs et des méthodes HTTP
+    standard (GET, POST, PATCH, DELETE).
+
+    \item[CI/CD] \textit{Continuous Integration / Continuous Delivery}.
+    Pratique d'intégration continue consistant à automatiser les tests et
+    le déploiement à chaque modification du code source.
+
+    \item[CRUD] \textit{Create, Read, Update, Delete}.
+    Ensemble des quatre opérations de base sur une ressource persistante.
+
+    \item[DRF] \textit{Django REST Framework}.
+    Bibliothèque Python construite sur Django facilitant le développement d'API REST :
+    sérialisation, authentification, permissions, pagination.
+
+    \item[Docker] Plateforme de conteneurisation permettant d'empaqueter une application
+    et ses dépendances dans des conteneurs isolés, assurant la reproductibilité
+    entre environnements (développement, production).
+
+    \item[HTTPS] \textit{HyperText Transfer Protocol Secure}.
+    Version chiffrée du protocole HTTP utilisant TLS/SSL pour sécuriser
+    les échanges entre client et serveur.
+
+    \item[JWT] \textit{JSON Web Token}.
+    Standard ouvert (RFC 7519) définissant un format compact pour transmettre
+    des informations de manière sécurisée entre parties sous forme de token signé
+    (HMAC-SHA256 ou RSA).
+
+    \item[Nginx] Serveur web et proxy inverse haute performance utilisé ici pour
+    terminer le chiffrement TLS, rediriger HTTP vers HTTPS, et router les requêtes
+    vers le frontend React et le backend Django.
+
+    \item[ORM] \textit{Object-Relational Mapper}.
+    Couche d'abstraction traduisant les objets Python en requêtes SQL.
+    Django ORM élimine les requêtes SQL brutes et prévient les injections SQL.
+
+    \item[RBAC] \textit{Role-Based Access Control}.
+    Modèle de contrôle d'accès attribuant des droits aux utilisateurs via
+    leurs rôles (ADMIN, MANAGER, ANALYST, VIEWER) plutôt qu'individuellement.
+
+    \item[UUID] \textit{Universally Unique Identifier}.
+    Identifiant de 128 bits généré aléatoirement (RFC 4122), utilisé comme clé primaire
+    pour empêcher l'énumération des ressources (\texttt{/offres/1}, \texttt{/offres/2}).
+
+    \item[XSS] \textit{Cross-Site Scripting}.
+    Vulnérabilité web permettant à un attaquant d'injecter du code JavaScript malveillant
+    dans les pages vues par d'autres utilisateurs. Stockage du token JWT en mémoire React
+    (non \texttt{localStorage}) constitue une protection contre ce vecteur.
+
+\end{description}
+
+\newpage

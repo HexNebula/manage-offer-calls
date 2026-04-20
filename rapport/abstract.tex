@@ -1,0 +1,234 @@
+\newgeometry{top=3cm, bottom=3cm, left=3cm, right=3cm}
+\begin{titlepage}
+  \begin{center}
+    \vspace*{4cm}
+    {\Huge \textbf{Dédicace}}
+
+    \vspace{2cm}
+
+    \begin{minipage}{0.85\textwidth}
+      \onehalfspacing
+
+      \textbf{À ma mère.}  
+      Ton amour, ta patience et ta confiance m’ont accompagné à chaque étape de ce travail.  
+      Tu as toujours été ma source de tendresse et de force.  
+      Que Dieu te protège et t’accorde santé, paix et longue vie.
+
+      \vspace{0.3cm}
+
+      \textbf{À mon père.}  
+      Ton sens du devoir, ta discrétion et ta présence solide m’ont transmis la rigueur et le courage.  
+      Merci pour tous tes sacrifices.  
+      Que Dieu te préserve et t’accorde une vie paisible et épanouie.
+
+      \vspace{0.3cm}
+
+      \textbf{À mes frères et à ma sœur.}  
+      Vous êtes bien plus qu’une famille : vous êtes mes repères et mes complices.  
+      Merci pour votre affection, vos encouragements et votre confiance sans faille.
+
+      \vspace{0.3cm}
+
+      \textbf{À mon oncle Idriss.}  
+      Pour ta gentillesse, tes conseils et ta présence. Merci d’avoir cru en moi.
+
+      \vspace{0.3cm}
+
+      \textbf{À ma famille et à mes amis proches.}  
+      Merci pour votre soutien constant, vos mots réconfortants et votre bienveillance.  
+      Chacun de vous, à sa manière, a contribué à ce projet.
+
+      \vspace{0.8cm}
+
+      \begin{flushright}
+        Anas
+      \end{flushright}
+    \end{minipage}
+  \end{center}\end{titlepage}
+\restoregeometry
+
+%---------- Remerciements ----------
+
+\begin{figure}[!h]
+\begin{center}
+\vspace{1.5cm}
+\includegraphics[height=1.8cm]{presentation/remerci.png}
+\end{center}
+\end{figure}
+\vspace{0.5cm}
+
+\begin{center}
+    \LARGE \textbf{Remerciements}
+\end{center}
+
+\vspace{1cm}
+
+\begin{onehalfspacing}
+
+Je tiens d’abord à remercier mes encadrants chez \textbf{N+ONE DATACENTERS}, 
+\textbf{M. Ayoub Amellaln} et \textbf{M. Amine El Mahi}, pour leur confiance, 
+leur disponibilité et leurs conseils tout au long de ce stage. 
+Merci de m’avoir guidé simplement et avec bienveillance, et de m’avoir offert 
+un cadre de travail agréable et motivant.
+
+\vspace{0.5cm}
+
+Je remercie aussi le corps enseignant de l’\textbf{ENSIAS} pour la formation 
+solide qu’il m’a donnée pendant ces deux ans, 
+et tout particulièrement les enseignants de la filière Génie Logiciel.
+
+\vspace{0.5cm}
+
+Enfin, merci à toute l’équipe de \textbf{N+ONE DATACENTERS} pour leur accueil chaleureux 
+et pour avoir rendu mon intégration facile dès le premier jour.
+
+\end{onehalfspacing}\vspace{0.3cm}
+}
+\end{spacing}
+
+\begin{figure}[!h]
+\begin{center}
+\vspace{1cm}
+\includegraphics[height=1cm]{presentation/remerc2.png}
+\end{center}
+\end{figure}
+
+\newpage
+
+%---------- Résumé ----------
+
+%---------- Résumé ----------
+
+\hskip7mm
+\vspace{3cm}
+\begin{center}
+{\textbf{\Huge Résumé}}
+\end{center}
+\vspace{1cm}
+
+\begin{spacing}{1.15}
+
+{\large
+Ce rapport présente le développement d'une application web sécurisée de gestion
+des appels d'offres, réalisé lors d'un stage d'un mois au sein de \textbf{N+ONE DATACENTERS}
+à Casablanca. Le projet répond à un besoin concret : remplacer un processus fragmenté
+(emails, Excel, partages réseau) par une solution centralisée, traçable et sécurisée.
+}
+\vspace{0.4cm}
+
+{\large
+L'application repose sur une architecture monolithe modulaire (\textbf{Django REST Framework}
+côté backend, \textbf{React.js} côté frontend) déployée via \textbf{Docker Compose}
+avec un proxy Nginx en HTTPS. Elle couvre l'intégralité du cycle de vie d'un appel
+d'offres : de la création au brouillon jusqu'à l'attribution du marché, en passant
+par la publication, la collecte des soumissions et l'évaluation des candidats.
+}
+\vspace{0.4cm}
+
+{\large
+Les principales fonctionnalités de sécurité implémentées sont :
+l'authentification \textbf{JWT} avec access token en mémoire et refresh token en cookie
+\texttt{httpOnly} scopé, le contrôle d'accès basé sur les rôles (\textbf{RBAC}) à quatre
+niveaux (ADMIN, MANAGER, ANALYST, VIEWER), le chiffrement sélectif
+\textbf{AES-256-GCM} des documents sensibles, et un journal d'audit complet.
+Un portail public isolé permet aux sociétés externes de déposer leurs propositions
+sans compte utilisateur, avec rate limiting et vérification des deadlines côté serveur.
+}
+\vspace{0.4cm}
+
+{\large
+Un pipeline d'intégration continue (GitHub Actions) exécute automatiquement
+les tests pytest et le lint flake8 à chaque push. L'application est déployable
+en une commande (\texttt{docker-compose up}).
+}
+\vspace{0.8cm}
+
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{0.3cm}
+
+\noindent
+{\large \textbf{Mots-clés :} Appels d'offres, Django REST Framework, React.js,
+JWT, RBAC, AES-256-GCM, Docker Compose, GitHub Actions, Portail public, Audit.}
+
+\end{spacing}
+
+\newpage
+%---------- Abstract ----------
+
+\hskip7mm
+\vspace{3cm}
+\begin{center}
+{\textbf{\Huge Abstract}}
+\end{center}
+\vspace{1cm}
+
+\begin{spacing}{1.15}
+{\large
+This report presents the development of a secure web application for procurement
+management, carried out during a one-month internship at \textbf{N+ONE DATACENTERS}
+in Casablanca. The project addresses a concrete need: replacing a fragmented process
+(emails, Excel, shared drives) with a centralized, traceable, and secure solution.
+
+\vspace{0.4cm}
+
+The application is built on a modular monolith architecture (\textbf{Django REST Framework}
+backend, \textbf{React.js} frontend) deployed via \textbf{Docker Compose} with an Nginx
+HTTPS proxy. It covers the complete procurement lifecycle: from draft creation to contract
+award, through publication, submission collection, and candidate evaluation.
+
+\vspace{0.4cm}
+
+The main security features implemented are: \textbf{JWT authentication} with access token
+in memory and refresh token in a scoped \texttt{httpOnly} cookie, four-level
+\textbf{role-based access control} (RBAC), selective \textbf{AES-256-GCM encryption}
+of sensitive documents, and a comprehensive audit log. An isolated public portal allows
+external companies to submit proposals without an account, with IP-based rate limiting
+and server-side deadline enforcement.
+
+\vspace{0.4cm}
+
+A continuous integration pipeline (GitHub Actions) automatically runs pytest tests and
+flake8 lint on every push. The application deploys in a single command
+(\texttt{docker-compose up}).
+
+\vspace{0.8cm}
+
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{0.3cm}
+
+\noindent\textbf{Keywords:} Procurement management, Django REST Framework, React.js,
+JWT, RBAC, AES-256-GCM, Docker Compose, GitHub Actions, Public portal, Audit log.
+}
+\end{spacing}
+
+\newpage
+
+%---------- Liste des abréviations ----------
+
+\chapter*{Liste des abréviations}
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+
+\begin{acronym}[AES-256-GCM]
+  \acro{AES}{Advanced Encryption Standard}
+  \acro{API}{Application Programming Interface}
+  \acro{CI}{Continuous Integration}
+  \acro{CORS}{Cross-Origin Resource Sharing}
+  \acro{CRUD}{Create, Read, Update, Delete}
+  \acro{DRF}{Django REST Framework}
+  \acro{GCM}{Galois/Counter Mode}
+  \acro{HTTP}{HyperText Transfer Protocol}
+  \acro{HTTPS}{HyperText Transfer Protocol Secure}
+  \acro{JWT}{JSON Web Token}
+  \acro{MIME}{Multipurpose Internet Mail Extensions}
+  \acro{ORM}{Object-Relational Mapper}
+  \acro{PDF}{Portable Document Format}
+  \acro{RBAC}{Role-Based Access Control}
+  \acro{REST}{Representational State Transfer}
+  \acro{SPA}{Single Page Application}
+  \acro{SQL}{Structured Query Language}
+  \acro{TLS}{Transport Layer Security}
+  \acro{UUID}{Universally Unique Identifier}
+  \acro{XSS}{Cross-Site Scripting}
+\end{acronym}
+
+\newpage

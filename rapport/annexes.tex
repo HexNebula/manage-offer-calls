@@ -1,0 +1,139 @@
+\chapter{docker-compose.yml}
+
+\begin{lstlisting}[style=PythonStyle, language={}, numbers=left, caption={docker-compose.yml complet}]
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME:-offres_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DOCUMENT_ENCRYPTION_KEY: ${DOCUMENT_ENCRYPTION_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  scheduler:
+    build: ./backend
+    command: >
+      sh -c "while true; do
+               python manage.py check_deadlines && sleep 3600 || sleep 60;
+             done"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+\end{lstlisting}
+
+% -------------------------------------------------------------------
+
+\chapter{Exemple d'entrée AuditLog}
+
+Exemple d'enregistrement dans le journal d'audit pour une opération de publication
+d'une offre :
+
+\begin{lstlisting}[style=PythonStyle, language={}, caption={Entrée AuditLog -- publication d'une offre}]
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "user": {
+    "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+    "email": "manager@nonedc.ma",
+    "full_name": "Karim Benchekroun",
+    "role": "MANAGER"
+  },
+  "action": "UPDATE",
+  "resource_type": "OfferCall",
+  "resource_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  "changes": {
+    "status": "PUBLISHED",
+    "published_at": "2025-08-15T09:32:14.000Z"
+  },
+  "ip_address": "192.168.1.42",
+  "timestamp": "2025-08-15T09:32:14.123Z"
+}
+\end{lstlisting}
+
+% -------------------------------------------------------------------
+
+\chapter{Manuel utilisateur}
+
+\section*{Connexion}
+
+Accéder à l'application via le navigateur. Saisir l'adresse email et le mot de passe.
+Cliquer sur \textit{Se connecter}. En cas d'erreur, vérifier les identifiants.
+
+\section*{Créer un appel d'offres}
+
+\begin{enumerate}
+    \item Dans le menu latéral, cliquer sur \textbf{Offres} puis \textbf{Nouvelle offre}.
+    \item Renseigner le titre, la description, la catégorie, le budget estimatif
+    et les dates limites.
+    \item Cliquer sur \textbf{Enregistrer}. L'offre est créée en statut BROUILLON.
+    \item Pour la publier, ouvrir le détail de l'offre et cliquer sur \textbf{Publier}.
+\end{enumerate}
+
+\section*{Évaluer les soumissions}
+
+\begin{enumerate}
+    \item Ouvrir le détail de l'offre, onglet \textbf{Soumissions}.
+    \item Cliquer sur la soumission à évaluer.
+    \item Saisir le score technique et le score financier.
+    \item Cliquer sur \textbf{Enregistrer l'évaluation}.
+\end{enumerate}
+
+\section*{Portail public (sociétés externes)}
+
+\begin{enumerate}
+    \item Accéder à \texttt{https://[domaine]/portal}.
+    \item Consulter la liste des appels d'offres ouverts.
+    \item Cliquer sur une offre pour voir le descriptif complet.
+    \item Cliquer sur \textbf{Soumettre une offre} et remplir le formulaire
+    (coordonnées, numéro d'enregistrement, fichier PDF de la proposition).
+    \item Conserver le numéro de soumission retourné à titre de référence.
+\end{enumerate}
+
+% -------------------------------------------------------------------
+
+\chapter{Résultats du pipeline CI}
+
+% TODO: \insererfigure{images/ci_full.png}{9cm}{Résultats complets du pipeline GitHub Actions}{ci_full}
+
+Le pipeline s'exécute en deux étapes séquentielles :
+\begin{enumerate}
+    \item \texttt{flake8 .} -- vérification du style Python (0 erreur)
+    \item \texttt{pytest --ds=config.settings} -- 12 tests, 0 échec, 0 saut
+\end{enumerate}

@@ -1,0 +1,155 @@
+\documentclass[a4paper]{report}
+
+%====================== PACKAGES ======================
+\usepackage{xcolor}
+\usepackage{indentfirst}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{mdframed}
+\usepackage{fontawesome5}
+\usepackage{titlesec}
+\usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage{listings}
+\usepackage[utf8]{inputenc}
+\usepackage{enumitem}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{amssymb}
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{PythonStyle}{
+    backgroundcolor=\color{backgroundColour},
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\small\ttfamily,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    tabsize=2,
+    language=Python
+}
+
+% Nested list bullets
+\setlist[itemize,1]{label=\textbullet}
+\setlist[itemize,2]{label=--}
+
+% N+ONE brand colors
+\definecolor{noneNavy}{HTML}{003049}
+\definecolor{noneOrange}{HTML}{F77F00}
+\definecolor{projectorange}{HTML}{F77F00}
+
+% Custom colors
+\definecolor{notecolor}{RGB}{230,240,255}
+\definecolor{bordercolor}{RGB}{50,100,200}
+\definecolor{titlecolor}{RGB}{30,60,120}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{url}
+\usepackage[section]{placeins}
+\usepackage{hyperref}
+\usepackage{acronym}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage[justification=centering]{caption}
+\usepackage{setspace}
+\usepackage{abstract}
+\usepackage[T1]{fontenc}
+\usepackage{csquotes}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{subfig}
+\usepackage{subcaption}
+\usepackage{eurosym}
+
+% ==== Encadrés ====
+\usepackage[most]{tcolorbox}
+\tcbset{
+  colframe=noneOrange,
+  colback=white,
+  coltitle=black,
+  boxrule=0.8pt,
+  arc=3pt,
+  left=6pt, right=6pt, top=6pt, bottom=6pt
+}
+
+%====================== METADATA ======================
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
+\hypersetup{
+  pdfauthor  = {MADANI Anas},
+  pdftitle   = {Rapport de Stage 2A},
+  pdfsubject = {Développement d'une Application Web Sécurisée pour la Gestion des Appels d'Offres},
+  pdfkeywords = {Django, React, JWT, RBAC, AES-256-GCM, Docker, GitHub Actions},
+  pdfstartview = {FitH}
+}
+
+%======================== DOCUMENT ========================
+\begin{document}
+\onehalfspacing
+\selectlanguage{french}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\renewcommand{\arraystretch}{1.5}
+
+%---------- Page de garde ----------
+\input{./title.tex}
+
+%---------- Page blanche ----------
+\newpage
+~
+\thispagestyle{empty}
+\newpage
+
+%---------- Dédicace + Remerciements + Résumé + Abréviations ----------
+\input{./abstract.tex}
+
+%---------- Tables ----------
+\tableofcontents
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+\thispagestyle{empty}
+\newpage
+
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+\newpage
+
+%---------- Corps ----------
+~
+\thispagestyle{empty}
+\setcounter{page}{0}
+\newpage
+
+\input{./introduction.tex}
+\input{./partie1.tex}
+\input{./partie2.tex}
+\input{./partie3.tex}
+\input{./conclusion.tex}
+
+%---------- Bibliographie ----------
+\newpage
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{bibliographie.bib}
+
+%---------- Annexes ----------
+\input{./annexes.tex}
+
+\end{document}

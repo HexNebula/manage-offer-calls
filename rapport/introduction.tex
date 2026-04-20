@@ -1,0 +1,96 @@
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction Générale}
+\markboth{Introduction Générale}{Introduction Générale}
+
+\begin{spacing}{1.25}
+{\large
+
+Dans un contexte économique où la commande publique et les marchés d'entreprise
+représentent des volumes financiers considérables, la gestion rigoureuse des appels
+d'offres constitue un enjeu stratégique majeur. Pour les organisations qui publient
+et évaluent régulièrement ces appels, la qualité du processus détermine directement
+la compétitivité, la conformité réglementaire et la maîtrise des délais.
+
+% TODO: Ajouter contexte spécifique N+ONE (secteur datacenter, volume d'AO, etc.)
+
+\section*{Contexte du stage}
+
+Ce stage de deuxième année a été effectué au sein de \textbf{N+ONE DATACENTERS},
+société spécialisée dans l'hébergement et la gestion d'infrastructure datacenter,
+basée à Casablanca, au Maroc. D'une durée d'un mois, du 6 août au 6 septembre 2025,
+il s'inscrit dans le cadre de la formation en Génie Logiciel à l'École Nationale
+Supérieure d'Informatique et d'Analyse des Systèmes (ENSIAS) de Rabat.
+
+% TODO: Compléter avec description activité N+ONE, nombre d'employés, datacenters, clients types
+
+\section*{Problématique}
+
+Avant ce projet, la gestion des appels d'offres chez N+ONE reposait sur des outils
+non spécialisés : échanges par email, suivi sous tableurs Excel et stockage de documents
+sur disques partagés. Cette approche fragmentée engendrait plusieurs problèmes
+opérationnels :
+
+\begin{itemize}
+    \item \textbf{Absence de centralisation} : les informations étaient dispersées
+    entre boîtes mail, fichiers Excel et répertoires réseau, rendant le suivi global
+    impossible sans consolidation manuelle.
+
+    \item \textbf{Risque de dépassement de délais} : aucun mécanisme d'alerte automatique
+    ne prévenait les responsables à l'approche des dates limites de soumission
+    ou d'évaluation.
+
+    \item \textbf{Sécurité insuffisante} : les offres financières (données sensibles)
+    circulaient par email ou étaient stockées en clair sur des partages réseau,
+    sans chiffrement ni contrôle d'accès granulaire.
+
+    \item \textbf{Traçabilité absente} : aucun historique ne permettait de savoir
+    qui avait modifié quoi, ni quand, compromettant la conformité et la gouvernance.
+
+    \item \textbf{Surcharge avant les échéances} : la réception de plusieurs soumissions
+    simultanées en fin de période créait un goulot d'étranglement,
+    les agents devant saisir manuellement les informations des candidats.
+\end{itemize}
+
+\section*{Objectifs du stage}
+
+L'objectif principal était de concevoir et développer une \textbf{application web
+sécurisée de gestion des appels d'offres}, couvrant l'intégralité du cycle de vie :
+de la création de l'offre jusqu'à l'attribution du marché, en passant par la publication,
+la collecte des soumissions et l'évaluation des candidats.
+
+Les objectifs techniques et fonctionnels définis en début de stage étaient les suivants :
+
+\begin{enumerate}
+    \item Authentification sécurisée avec gestion des rôles (RBAC) ;
+    \item Cycle de vie complet des appels d'offres avec transitions d'état contrôlées ;
+    \item Portail public permettant aux sociétés externes de déposer leurs offres
+    sans compte utilisateur ;
+    \item Chiffrement AES-256-GCM des documents financiers sensibles ;
+    \item Notifications automatiques (délais, changements de statut) ;
+    \item Génération de rapports PDF ;
+    \item Journal d'audit traçant toutes les actions sur les ressources ;
+    \item Déploiement Dockerisé reproductible avec pipeline CI/CD.
+\end{enumerate}
+
+\section*{Plan du rapport}
+
+Ce rapport s'organise en trois parties principales.
+
+La \textbf{Partie 1} présente le cahier des charges : après une introduction à
+l'organisme d'accueil et au domaine des appels d'offres, elle détaille l'analyse
+des besoins fonctionnels et non-fonctionnels, l'étude des solutions existantes
+et la justification du développement sur mesure.
+
+La \textbf{Partie 2} couvre l'analyse, la conception et l'architecture : choix
+technologiques argumentés, planification, modélisation UML (cas d'utilisation,
+diagrammes d'activité, séquences) et conception détaillée du système (modèle de
+données, API REST, architecture de sécurité).
+
+La \textbf{Partie 3} décrit la réalisation et la mise en œuvre : implémentation
+des modules backend et frontend, présentation des interfaces, et résultats
+des tests de validation.
+
+}
+\end{spacing}
+
+\newpage

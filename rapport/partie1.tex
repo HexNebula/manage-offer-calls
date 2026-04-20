@@ -1,0 +1,209 @@
+\chapter{Cahier des Charges}
+
+\begin{spacing}{1.25}
+{\large
+
+\section{Présentation de l'organisme d'accueil}
+
+\subsection{N+ONE DATACENTERS}
+
+% TODO: Rédiger présentation N+ONE
+% Informations à inclure :
+%  - Date de création, siège social (Casablanca)
+%  - Activité principale : hébergement, gestion, infogérance datacenter
+%  - Nombre de datacenters, capacité
+%  - Clients types (entreprises, opérateurs, administrations ?)
+%  - Effectif approximatif
+%  - Certifications éventuelles (ISO 27001, Tier III ?)
+
+\lipsum[1-2]
+
+\subsection{Environnement de travail}
+
+% TODO: Décrire l'équipe, le département d'accueil, les outils utilisés en interne
+
+Le stage s'est déroulé au sein du département \textit{[TODO: nom du département]},
+sous la supervision de M. Ayoub \textsc{Amellaln} et M. Amine \textsc{El Mahi}.
+
+% TODO: Organigramme (insérer figure)
+% \insererfigure{images/organigramme.png}{8cm}{Organigramme de N+ONE DATACENTERS}{organigramme}
+
+% -------------------------------------------------------------------
+
+\section{Présentation du sujet}
+
+\subsection{Les appels d'offres}
+
+Un appel d'offres est une procédure formalisée par laquelle une organisation (le
+\textit{maître d'ouvrage}) invite des fournisseurs ou prestataires potentiels à
+soumettre des propositions commerciales et techniques pour la réalisation d'un marché.
+Cette procédure garantit la mise en concurrence, la transparence et la traçabilité
+des décisions d'achat.
+
+Le cycle de vie d'un appel d'offres se décompose en plusieurs phases distinctes,
+illustrées dans la figure~\ref{fig:lifecycle} :
+
+\begin{enumerate}
+    \item \textbf{BROUILLON (DRAFT)} : l'offre est en cours de rédaction,
+    non visible par les candidats.
+    \item \textbf{PUBLIÉE (PUBLISHED)} : l'offre est ouverte, les sociétés
+    externes peuvent soumettre leurs propositions via le portail public.
+    \item \textbf{ÉVALUATION} : la date limite de soumission est passée ;
+    les responsables évaluent et scorent les candidatures reçues.
+    \item \textbf{ATTRIBUÉE (AWARDED)} : le marché est attribué au candidat retenu.
+    \item \textbf{ANNULÉE (CANCELLED)} : l'offre est interrompue à tout moment
+    avant attribution.
+\end{enumerate}
+
+% TODO: Insérer diagramme d'activité du cycle de vie
+% \insererfigure{images/lifecycle.png}{7cm}{Cycle de vie d'un appel d'offres}{lifecycle}
+
+\subsection{Les acteurs du système}
+
+Le système distingue deux catégories d'utilisateurs :
+
+\paragraph{Acteurs internes} Membres du personnel de N+ONE disposant d'un compte
+applicatif, répartis en quatre rôles :
+
+\begin{itemize}
+    \item \textbf{ADMIN} : administrateur système, gère les comptes utilisateurs
+    et accède au journal d'audit complet.
+    \item \textbf{MANAGER} : responsable d'offres, crée et pilote les appels d'offres,
+    attribue les marchés, génère les rapports PDF.
+    \item \textbf{ANALYST} : évaluateur, score les soumissions et consulte
+    les dossiers des candidats.
+    \item \textbf{VIEWER} : lecteur seul, consulte les offres publiées
+    sans pouvoir modifier quoi que ce soit.
+\end{itemize}
+
+\paragraph{Acteurs externes} Sociétés soumissionnaires accédant uniquement au
+portail public sans créer de compte. Elles peuvent consulter les offres ouvertes
+et déposer leurs propositions directement en ligne.
+
+% -------------------------------------------------------------------
+
+\section{Analyse des besoins}
+
+\subsection{Besoins fonctionnels}
+
+\begin{table}[ht]
+\centering
+\caption{Besoins fonctionnels du système}
+\label{tab:besoins-fonctionnels}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Module} & \textbf{Description} \\
+\hline
+Authentification & Connexion sécurisée, déconnexion, rafraîchissement de session \\
+\hline
+Gestion des offres & Création, modification, publication, transition de statut, annulation \\
+\hline
+Candidats et soumissions & Enregistrement des candidats, dépôt de soumissions, scoring technique et financier \\
+\hline
+Documents & Upload multipart, téléchargement sécurisé, chiffrement sélectif \\
+\hline
+Portail public & Consultation des offres publiées et dépôt de soumissions sans authentification \\
+\hline
+Notifications & Alertes automatiques : délais approchants, changements de statut, attribution \\
+\hline
+Rapports & Export PDF d'une offre (synthèse, tableau des scores, candidat retenu) \\
+\hline
+Audit & Journal des actions sur toutes les ressources (qui, quoi, quand, depuis où) \\
+\hline
+Administration & Gestion des comptes utilisateurs (création, désactivation, changement de rôle) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Besoins non-fonctionnels}
+
+\begin{description}
+    \item[Sécurité] Authentification par JWT (token en mémoire, cookie httpOnly),
+    contrôle d'accès basé sur les rôles (RBAC), chiffrement AES-256-GCM des documents
+    sensibles, audit complet, protection contre les injections SQL, HTTPS obligatoire.
+
+    \item[Performance] Réponses API inférieures à 500 ms pour les listes paginées.
+    Pagination côté serveur (20 offres par page). Chiffrement uniquement sur les
+    documents marqués sensibles pour ne pas pénaliser les uploads standards.
+
+    \item[Disponibilité] Redémarrage automatique des conteneurs Docker en cas d'échec
+    (\texttt{restart: unless-stopped}). Vérifications de santé (\textit{health checks})
+    sur chaque service.
+
+    \item[Traçabilité] Toute action d'écriture (création, modification, téléchargement,
+    export, connexion) est enregistrée dans le journal d'audit avec l'adresse IP,
+    l'utilisateur et le contenu des modifications.
+
+    \item[Maintenabilité] Architecture modulaire (8 applications Django indépendantes),
+    pipeline CI automatique (tests + lint à chaque push), structure de projet
+    documentée.
+
+    \item[Reproductibilité] Déploiement en une commande (\texttt{docker-compose up}).
+    Variables d'environnement pour tous les secrets, aucune valeur en dur dans le code.
+\end{description}
+
+% -------------------------------------------------------------------
+
+\section{Évaluation et justification de la solution}
+
+\subsection{Étude de l'existant}
+
+Plusieurs solutions existent sur le marché pour la gestion des appels d'offres :
+
+\begin{table}[ht]
+\centering
+\caption{Comparaison des solutions existantes}
+\label{tab:existant}
+\begin{tabularx}{\textwidth}{|l|X|X|X|}
+\hline
+\textbf{Solution} & \textbf{Points forts} & \textbf{Limites} & \textbf{Adapté ?} \\
+\hline
+SAP Ariba & Complète, intégration ERP & Coût élevé (licences), délai de déploiement long, sur-mesure impossible & Non \\
+\hline
+Proactis & Gestion marchés publics & Coût prohibitif pour une PME, rigidité du workflow & Non \\
+\hline
+OpenProposal / open source & Gratuit & Documentation insuffisante, peu maintenu, pas de support & Non \\
+\hline
+Excel + partage réseau & Gratuit, familier & Non sécurisé, non traçable, fragile, pas de portail externe & Non \\
+\hline
+\textbf{Développement sur mesure} & \textbf{Adapté exactement aux besoins} & Délai de développement & \textbf{Oui} \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Critique de l'existant}
+
+Aucune des solutions commerciales n'est adaptée au contexte de ce stage pour
+trois raisons cumulatives. D'abord, le \textbf{budget nul} interdit les licences SaaS.
+Ensuite, le \textbf{délai d'un mois} exclut tout déploiement et personnalisation
+de produit tiers. Enfin, le besoin d'un \textbf{chiffrement sélectif} des documents
+financiers et d'un portail public isolé dépasse les fonctionnalités standard
+des outils génériques.
+
+La solution Excel actuelle, bien que pratique, expose l'entreprise à des risques
+réels : perte de données, accès non contrôlé aux offres financières, impossibilité
+de retrouver l'historique des modifications.
+
+\subsection{Justification du développement sur mesure}
+
+Le développement d'une application web sur mesure est la seule option répondant
+simultanément à toutes les contraintes :
+
+\begin{itemize}
+    \item Workflow exact du processus N+ONE (statuts, rôles, notifications) ;
+    \item Chiffrement AES-256-GCM intégré nativement ;
+    \item Portail public isolé pour les sociétés externes ;
+    \item Coût nul en licences (stack open source) ;
+    \item Déployable sur l'infrastructure existante de N+ONE.
+\end{itemize}
+
+\paragraph{Estimation des coûts d'infrastructure} En cas de déploiement en production,
+le coût se limiterait à l'infrastructure serveur : environ 50 à 100 \euro/mois
+sur un serveur cloud (ou nul si déployé sur les serveurs internes N+ONE), contre
+plusieurs milliers d'euros annuels pour une licence SAP Ariba.
+
+
+}
+\end{spacing}
+
+\newpage

@@ -1,0 +1,82 @@
+\chapter*{Conclusion}
+\addcontentsline{toc}{chapter}{Conclusion}
+\markboth{Conclusion}{Conclusion}
+
+\section*{Récapitulatif des réalisations}
+
+Au terme de ce stage d'un mois, l'application web de gestion des appels d'offres
+a été développée, testée et déployée dans son intégralité. Les objectifs fixés en
+début de stage ont été atteints :
+
+\begin{itemize}
+    \item Authentification sécurisée JWT avec cookie httpOnly scopé,
+    contrôle d'accès par rôles (RBAC) sur l'ensemble des endpoints ;
+    \item Cycle de vie complet des appels d'offres (DRAFT → PUBLISHED → EVALUATION
+    → AWARDED) avec machine à états côté serveur ;
+    \item Portail public permettant aux sociétés externes de déposer leurs propositions
+    sans compte, avec rate limiting et vérification des deadlines ;
+    \item Chiffrement AES-256-GCM sélectif des documents sensibles,
+    déchiffrement transparent au téléchargement ;
+    \item Notifications automatiques par le scheduler Docker ;
+    \item Export PDF des synthèses d'offres ;
+    \item Journal d'audit complet sur toutes les opérations d'écriture ;
+    \item Pipeline CI GitHub Actions (lint + tests) actif sur chaque push.
+\end{itemize}
+
+\section*{Difficultés rencontrées}
+
+\paragraph{Isolation du portail public} La principale difficulté architecturale
+a été de concevoir le portail public comme une surface réellement isolée de l'API
+interne. Le problème du cookie de rafraîchissement -- qui, sans restriction de chemin,
+aurait été envoyé sur toutes les requêtes du portail -- a nécessité de restreindre
+le cookie à \texttt{path=/api/auth/}, une subtilité non documentée dans la plupart
+des tutoriels JWT.
+
+\paragraph{Chiffrement sélectif} L'intégration du chiffrement AES-256-GCM a
+soulevé la question de la gestion des clés : stocker la clé dans le code source
+ou dans \texttt{docker-compose.yml} aurait constitué une faille évidente.
+La solution par variable d'environnement (\texttt{DOCUMENT\_ENCRYPTION\_KEY})
+et l'exclusion des fichiers \texttt{.env} du dépôt Git ont résolu ce problème.
+
+\paragraph{Pipeline CI} Les premiers commits ont déclenché des échecs de pipeline
+liés à des migrations manquantes et des violations de lint. La correction a nécessité
+de comprendre le flux de migration Django dans un environnement de test isolé.
+
+\section*{Compétences acquises}
+
+Ce stage a été l'occasion de mettre en pratique et d'approfondir plusieurs
+compétences :
+
+\begin{itemize}
+    \item Développement d'API REST sécurisées avec Django REST Framework ;
+    \item Sécurité web applicative (OWASP Top 10, JWT, RBAC, chiffrement) ;
+    \item Conteneurisation avec Docker Compose et architecture multi-services ;
+    \item Intégration continue avec GitHub Actions ;
+    \item Conception de systèmes : modèle de données, machine à états, audit.
+\end{itemize}
+
+\section*{Perspectives}
+
+L'application est fonctionnelle et déployable, mais plusieurs améliorations
+pourraient être envisagées pour une mise en production réelle :
+
+\begin{description}
+    \item[Certificat SSL valide] Remplacer le certificat auto-signé par un certificat
+    Let's Encrypt pour éliminer les avertissements navigateur.
+    \item[Notifications par email] Ajouter l'envoi d'emails (SMTP) en complément
+    des notifications en application.
+    \item[Rotation des clés AES] Implémenter un mécanisme de re-chiffrement
+    des documents lors d'un changement de clé.
+    \item[Optimistic locking] Prévenir les conflits d'édition simultanée
+    sur les offres via un champ de version.
+    \item[Docker Secrets] Remplacer les variables d'environnement par Docker Secrets
+    ou un gestionnaire de secrets dédié (Vault) en production.
+\end{description}
+
+% TODO: Ajouter paragraphe de clôture personnel (bilan humain, recommandation stage, etc.)
+
+
+}
+\end{spacing}
+
+\newpage
