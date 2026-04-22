@@ -1,5 +1,5 @@
 # Fdb version 4
-["bibtex main"] 0 "main.aux" "main.bbl" "main" 1776821174.05395 0
+["bibtex main"] 0 "main.aux" "main.bbl" "main" 1776876718.04356 0
   "/usr/share/texmf-dist/bibtex/bst/base/plain.bst" 1775415801 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
   "bibliographie.bib" 0 -1 0 ""
   "main.aux" 0 -1 0 "pdflatex"
@@ -7,7 +7,7 @@
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1776821171.38879 "main.tex" "main.pdf" "main" 1776821174.05418 2
+["pdflatex"] 1776876714.93514 "main.tex" "main.pdf" "main" 1776876718.04386 2
   "/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1775415801 2375 baa924870cfb487815765f9094cf3728 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc" 1775415801 2840 216e6e45ad352e2456e1149f28885bee ""
   "/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc" 1775415801 3031 6c4d3515bf7115d8518af1c9ab97ca44 ""
@@ -327,17 +327,24 @@
   "annexes.tex" 1776615680.05973 4197 cb575c2edd61d9db246d81926ce4437a ""
   "conclusion.tex" 1776820588.33943 3940 b662fe287dae10afaae16595343c80df ""
   "ensias.png" 1776613536.91025 42016 b331b2008b904294c82ef21b3df3140e ""
+  "images/dc_services.png" 1776868976.65422 57507 e6ade7ce9e78623469381b57f9439914 ""
+  "images/geography.png" 1776869511.39997 226770 c5aa9a65836bf630eef16274f78c2c3d ""
+  "images/important_dates.png" 1776870099.36565 267138 04c979ae3bac3ca48a92cd9c872fa4c0 ""
+  "images/none.png" 1776866983.64578 13017 8c8c87a3a417595a82d01fef5a4453c5 ""
+  "images/onecloud.png" 1776867808.43359 21001 7572353a125e55bf505fc20e54136a73 ""
+  "images/organigramme_nplusone.png" 1776870473.57926 117191 40bd39f3aa88fd5e3d2e9c24b1d873ea ""
+  "images/partenaires.png" 1776871397.94662 25098 9e0f93a6f851790081edfc9e24a4e834 ""
   "images/use_case.png" 1776784720.65593 137896 0eca50999bab56abcbfc76b657aded4e ""
-  "introduction.tex" 1776820613.29902 4702 683570a8708a4a813163a4dd0d6dcb38 ""
+  "introduction.tex" 1776876714.25904 3142 5b177c98fe393c537975282a885c6309 ""
   "logos/nplusone.png" 1776643649.8205 13007 3561a43391ba51165d6cf6597c7359af ""
-  "main.aux" 1776821173.71465 23757 de3b22c06360a4c013f0df0615db118b "pdflatex"
+  "main.aux" 1776876717.68714 24453 619f44ee2721879ef3de6a2d6be47517 "pdflatex"
   "main.bbl" 0 -1 0 "bibtex main"
-  "main.lof" 1776821173.72065 2538 f6792be7f1379085904e9ea35f8d6079 "pdflatex"
-  "main.lot" 1776821173.72065 1298 7025f1bc67ca59c1251ab6f2108a8228 "pdflatex"
-  "main.out" 1776821173.71865 15393 11b9f518b900a0ec669088f987b07d71 "pdflatex"
+  "main.lof" 1776876717.69214 3263 371678104bfa950c3b0e2f3f06712470 "pdflatex"
+  "main.lot" 1776876717.69214 1300 9d7df6d0de471b1396098b1e47ab0fc5 "pdflatex"
+  "main.out" 1776876717.69114 16249 e658da33ab0805c5e371eba0c20bb4af "pdflatex"
   "main.tex" 1776643833.02786 3627 b60aaa55eab0dc8cf0aeefa7ed5881f4 ""
-  "main.toc" 1776821173.71965 7779 da601453659c9830ab8fae4d5d8d9ae5 "pdflatex"
-  "partie1.tex" 1776820706.30121 9042 e2df00d1c7f81e69884ee5f90b0e28a7 ""
+  "main.toc" 1776876717.69214 8129 40f1dc8a66bd313aa7dcbab6af5f85eb "pdflatex"
+  "partie1.tex" 1776874845.14623 14212 e478ab617207d1057ac3d55e0c26b8f1 ""
   "partie2.tex" 1776820835.80024 23137 ae59249ce547e7e163b56b4c2c358af5 ""
   "partie3.tex" 1776821061.74163 15546 426c92ee66bbe7fbd0fbe99e09e70ce8 ""
   "presentation/remerc2.png" 1776613536.91012 8267 41bca23bf990e3d81b4557ecedbe3b4e ""

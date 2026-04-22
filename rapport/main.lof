@@ -1,28 +1,34 @@
 \babel@toc {french}{}\relax 
 \babel@toc {french}{}\relax 
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Organigramme de N+ONE DATACENTERS}}{3}{figure.caption.12}%
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Cycle de vie d'un appel d'offres}}{4}{figure.caption.13}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Logo de l'entreprise N+ONE DATACENTERS}}{2}{figure.caption.8}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Logo de OneCloud}}{2}{figure.caption.9}%
+\contentsline {figure}{\numberline {1.3}{\ignorespaces Principaux services proposés par N+ONE DATACENTERS}}{3}{figure.caption.10}%
+\contentsline {figure}{\numberline {1.4}{\ignorespaces Présence et projets d'expansion de N+ONE DATACENTERS}}{3}{figure.caption.11}%
+\contentsline {figure}{\numberline {1.5}{\ignorespaces Récapitulatif des dates clés de N+ONE DATACENTERS}}{4}{figure.caption.12}%
+\contentsline {figure}{\numberline {1.6}{\ignorespaces Organigramme de N+ONE DATACENTERS}}{5}{figure.caption.13}%
+\contentsline {figure}{\numberline {1.7}{\ignorespaces Partenaires de N+ONE DATACENTERS}}{5}{figure.caption.14}%
+\contentsline {figure}{\numberline {1.8}{\ignorespaces Cycle de vie d'un appel d'offres}}{6}{figure.caption.15}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Diagramme de Gantt du projet (6 août -- 6 septembre 2025)}}{10}{figure.caption.18}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagramme de cas d'utilisation}}{12}{figure.caption.20}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces Diagramme d'activité : cycle de vie d'une offre}}{12}{figure.caption.21}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Architecture globale du système}}{13}{figure.caption.22}%
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Diagramme entité-relation}}{14}{figure.caption.24}%
-\contentsline {figure}{\numberline {2.6}{\ignorespaces Diagramme de séquence : flux d'authentification}}{15}{figure.caption.26}%
-\contentsline {figure}{\numberline {2.7}{\ignorespaces Diagramme de séquence : soumission portail public}}{17}{figure.caption.28}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Diagramme de Gantt du projet (6 août -- 6 septembre 2025)}}{13}{figure.caption.20}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagramme de cas d'utilisation}}{15}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Diagramme d'activité : cycle de vie d'une offre}}{15}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Architecture globale du système}}{16}{figure.caption.24}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Diagramme entité-relation}}{17}{figure.caption.26}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Diagramme de séquence : flux d'authentification}}{18}{figure.caption.28}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Diagramme de séquence : soumission portail public}}{20}{figure.caption.30}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Pipeline CI GitHub Actions}}{19}{figure.caption.30}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Tableau de bord principal}}{22}{figure.caption.31}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Liste des offres avec filtres}}{22}{figure.caption.32}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Détail d'une offre avec onglets}}{23}{figure.caption.33}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Formulaire de création d'offre}}{23}{figure.caption.34}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Évaluation et scoring d'une soumission}}{23}{figure.caption.35}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Portail public — liste des offres}}{24}{figure.caption.36}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Formulaire de soumission publique}}{24}{figure.caption.37}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Journal d'audit}}{25}{figure.caption.38}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces Exemple de rapport PDF généré}}{25}{figure.caption.39}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces Pipeline CI au vert — tous les tests passent}}{26}{figure.caption.41}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Pipeline CI GitHub Actions}}{22}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Tableau de bord principal}}{25}{figure.caption.33}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Liste des offres avec filtres}}{25}{figure.caption.34}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Détail d'une offre avec onglets}}{26}{figure.caption.35}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Formulaire de création d'offre}}{26}{figure.caption.36}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Évaluation et scoring d'une soumission}}{26}{figure.caption.37}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Portail public — liste des offres}}{27}{figure.caption.38}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Formulaire de soumission publique}}{27}{figure.caption.39}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Journal d'audit}}{28}{figure.caption.40}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Exemple de rapport PDF généré}}{28}{figure.caption.41}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Pipeline CI au vert — tous les tests passent}}{29}{figure.caption.43}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

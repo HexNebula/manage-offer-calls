@@ -3,94 +3,25 @@
 \markboth{Introduction Générale}{Introduction Générale}
 
 \begin{spacing}{1.25}
-{\large
 
-Dans un contexte économique où la commande publique et les marchés d'entreprise
-représentent des volumes financiers considérables, la gestion rigoureuse des appels
-d'offres constitue un enjeu stratégique majeur. Pour les organisations qui publient
-et évaluent régulièrement ces appels, la qualité du processus détermine directement
-la compétitivité, la conformité réglementaire et la maîtrise des délais.
+Dans un contexte économique où la commande publique et les marchés d'entreprise représentent des volumes financiers considérables, la gestion rigoureuse des appels d'offres constitue un enjeu stratégique majeur. Pour les organisations qui publient et évaluent régulièrement ces appels, la qualité du processus détermine directement la compétitivité, la conformité réglementaire et la maîtrise des délais.
 
-\todo[inline, color=orange!30]{À COMPLÉTER : contexte spécifique N+ONE — secteur datacenter, volume d'appels d'offres, positionnement marché}
+\vspace{0.4cm}
 
-\section*{Contexte du stage}
+Ce stage de deuxième année a été effectué au sein de \textbf{N+ONE DATACENTERS}, société spécialisée dans l'hébergement et la gestion d'infrastructures de datacenters, basée à Casablanca au Maroc. D'une durée d'un mois, du 6 août au 6 septembre 2025, il s'inscrit dans le cadre de la formation en Génie Logiciel à l'École Nationale Supérieure d'Informatique et d'Analyse des Systèmes (ENSIAS) de Rabat.
 
-Ce stage de deuxième année a été effectué au sein de \textbf{N+ONE DATACENTERS},
-société spécialisée dans l'hébergement et la gestion d'infrastructure datacenter,
-basée à Casablanca, au Maroc. D'une durée d'un mois, du 6 août au 6 septembre 2025,
-il s'inscrit dans le cadre de la formation en Génie Logiciel à l'École Nationale
-Supérieure d'Informatique et d'Analyse des Systèmes (ENSIAS) de Rabat.
+\vspace{0.4cm}
 
-\todo[inline, color=orange!30]{À COMPLÉTER : description activité N+ONE, nombre d'employés, nombre de datacenters, clients types}
+Avant ce projet, la gestion des appels d'offres chez N+ONE reposait sur des outils non spécialisés : échanges par email, suivi par tableurs Excel et stockage de documents sur disques partagés. Cette approche fragmentée engendrait plusieurs problèmes opérationnels : absence de centralisation, risque de dépassement des délais (absence d'alertes automatiques), sécurité insuffisante des documents financiers sensibles, absence de traçabilité des modifications, et surcharge des agents en fin de période de soumission.
 
-\section*{Problématique}
+\vspace{0.4cm}
 
-Avant ce projet, la gestion des appels d'offres chez N+ONE reposait sur des outils
-non spécialisés : échanges par email, suivi sous tableurs Excel et stockage de documents
-sur disques partagés. Cette approche fragmentée engendrait plusieurs problèmes
-opérationnels :
+Pour répondre à ces besoins, l'objectif principal du stage était de concevoir et développer une \textbf{application web sécurisée de gestion des appels d'offres}, couvrant l'intégralité du cycle de vie : de la création d'une offre jusqu'à l'attribution du marché. La solution repose sur une \textbf{architecture monolithe modulaire} (Django REST Framework pour le backend, React.js pour le frontend), déployée via \textbf{Docker Compose}, avec un accent particulier sur la sécurité : authentification \textbf{JWT} avec gestion fine des sessions, contrôle d'accès basé sur les rôles (\textbf{RBAC}), chiffrement sélectif \textbf{AES-256-GCM} des documents sensibles, et journal d'audit complet. Un portail public isolé permet aux sociétés externes de déposer leurs propositions sans compte utilisateur, avec limitation du taux de requêtes (rate limiting) et vérification des dates limites côté serveur.
 
-\begin{itemize}
-    \item \textbf{Absence de centralisation} : les informations étaient dispersées
-    entre boîtes mail, fichiers Excel et répertoires réseau, rendant le suivi global
-    impossible sans consolidation manuelle.
+\vspace{0.4cm}
 
-    \item \textbf{Risque de dépassement de délais} : aucun mécanisme d'alerte automatique
-    ne prévenait les responsables à l'approche des dates limites de soumission
-    ou d'évaluation.
+Ce rapport s'organise en trois chapitres. Le \textbf{premier chapitre} présente le cahier des charges : l'organisme d'accueil, le domaine des appels d'offres, l'analyse des besoins et la justification d'un développement sur mesure. Le \textbf{deuxième chapitre} couvre l'analyse, la conception et l'architecture : choix technologiques, planification, modélisation UML et conception détaillée du système. Le \textbf{troisième chapitre} décrit la réalisation et la mise en œuvre : implémentation, interfaces utilisateur et résultats des tests de validation.
 
-    \item \textbf{Sécurité insuffisante} : les offres financières (données sensibles)
-    circulaient par email ou étaient stockées en clair sur des partages réseau,
-    sans chiffrement ni contrôle d'accès granulaire.
-
-    \item \textbf{Traçabilité absente} : aucun historique ne permettait de savoir
-    qui avait modifié quoi, ni quand, compromettant la conformité et la gouvernance.
-
-    \item \textbf{Surcharge avant les échéances} : la réception de plusieurs soumissions
-    simultanées en fin de période créait un goulot d'étranglement,
-    les agents devant saisir manuellement les informations des candidats.
-\end{itemize}
-
-\section*{Objectifs du stage}
-
-L'objectif principal était de concevoir et développer une \textbf{application web
-sécurisée de gestion des appels d'offres}, couvrant l'intégralité du cycle de vie :
-de la création de l'offre jusqu'à l'attribution du marché, en passant par la publication,
-la collecte des soumissions et l'évaluation des candidats.
-
-Les objectifs techniques et fonctionnels définis en début de stage étaient les suivants :
-
-\begin{enumerate}
-    \item Authentification sécurisée avec gestion des rôles (RBAC) ;
-    \item Cycle de vie complet des appels d'offres avec transitions d'état contrôlées ;
-    \item Portail public permettant aux sociétés externes de déposer leurs offres
-    sans compte utilisateur ;
-    \item Chiffrement AES-256-GCM des documents financiers sensibles ;
-    \item Notifications automatiques (délais, changements de statut) ;
-    \item Génération de rapports PDF ;
-    \item Journal d'audit traçant toutes les actions sur les ressources ;
-    \item Déploiement Dockerisé reproductible avec pipeline CI/CD.
-\end{enumerate}
-
-\section*{Plan du rapport}
-
-Ce rapport s'organise en trois parties principales.
-
-La \textbf{Partie 1} présente le cahier des charges : après une introduction à
-l'organisme d'accueil et au domaine des appels d'offres, elle détaille l'analyse
-des besoins fonctionnels et non-fonctionnels, l'étude des solutions existantes
-et la justification du développement sur mesure.
-
-La \textbf{Partie 2} couvre l'analyse, la conception et l'architecture : choix
-technologiques argumentés, planification, modélisation UML (cas d'utilisation,
-diagrammes d'activité, séquences) et conception détaillée du système (modèle de
-données, API REST, architecture de sécurité).
-
-La \textbf{Partie 3} décrit la réalisation et la mise en œuvre : implémentation
-des modules backend et frontend, présentation des interfaces, et résultats
-des tests de validation.
-
-}
 \end{spacing}
 
 \newpage

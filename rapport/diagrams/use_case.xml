@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- System boundary -->
+    <mxCell id="2" value="Système de gestion des appels d&apos;offres" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];shape=mxgraph.flowchart.start_2;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=10;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="220" y="60" width="720" height="700" as="geometry" />
+    </mxCell>
+
+    <!-- ===== INTERNAL ACTORS (left) ===== -->
+
+    <!-- Admin -->
+    <mxCell id="10" value="Admin" style="shape=mxgraph.flowchart.actor;fillColor=#003049;strokeColor=#003049;fontColor=#003049;fontSize=13;fontStyle=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="100" width="50" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- Manager -->
+    <mxCell id="11" value="Manager" style="shape=mxgraph.flowchart.actor;fillColor=#003049;strokeColor=#003049;fontColor=#003049;fontSize=13;fontStyle=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="260" width="50" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- Analyst -->
+    <mxCell id="12" value="Analyst" style="shape=mxgraph.flowchart.actor;fillColor=#003049;strokeColor=#003049;fontColor=#003049;fontSize=13;fontStyle=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="430" width="50" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- Viewer -->
+    <mxCell id="13" value="Viewer" style="shape=mxgraph.flowchart.actor;fillColor=#003049;strokeColor=#003049;fontColor=#003049;fontSize=13;fontStyle=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="590" width="50" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- ===== EXTERNAL ACTOR (right) ===== -->
+
+    <!-- Société soumissionnaire -->
+    <mxCell id="14" value="Société soumissionnaire" style="shape=mxgraph.flowchart.actor;fillColor=#F77F00;strokeColor=#F77F00;fontColor=#F77F00;fontSize=13;fontStyle=1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="1060" y="490" width="50" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- ===== USE CASES ===== -->
+
+    <!-- UC1: Se connecter -->
+    <mxCell id="20" value="Se connecter" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="280" y="90" width="180" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC2: Gérer les utilisateurs -->
+    <mxCell id="21" value="Gérer les utilisateurs" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="280" y="190" width="180" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC3: Consulter le journal d'audit -->
+    <mxCell id="22" value="Consulter le journal d&apos;audit" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="280" y="290" width="180" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC4: Créer / modifier un appel d'offres -->
+    <mxCell id="23" value="Créer / modifier un appel d&apos;offres" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="90" width="200" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- UC5: Gérer le cycle de vie d'une offre -->
+    <mxCell id="24" value="Gérer le cycle de vie d&apos;une offre" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="210" width="200" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- UC6: Consulter les offres -->
+    <mxCell id="25" value="Consulter les offres" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="330" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC7: Évaluer les soumissions -->
+    <mxCell id="26" value="Évaluer les soumissions" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="440" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC8: Gérer les documents -->
+    <mxCell id="27" value="Gérer les documents" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="550" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC9: Générer un rapport PDF -->
+    <mxCell id="28" value="Générer un rapport PDF" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#003049;fontColor=#003049;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="650" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC10: Consulter le portail public -->
+    <mxCell id="29" value="Consulter le portail public" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#F77F00;fontColor=#F77F00;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="820" y="490" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- UC11: Soumettre une offre -->
+    <mxCell id="30" value="Soumettre une offre" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#F77F00;fontColor=#F77F00;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="820" y="600" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ===== ASSOCIATIONS ===== -->
+
+    <!-- Admin → Se connecter -->
+    <mxCell id="40" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="20" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Gérer utilisateurs -->
+    <mxCell id="41" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="21" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Consulter audit -->
+    <mxCell id="42" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="22" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Créer offre -->
+    <mxCell id="43" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="23" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Cycle de vie -->
+    <mxCell id="44" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="24" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Consulter offres -->
+    <mxCell id="45" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="25" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Évaluer -->
+    <mxCell id="46" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="26" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → Documents -->
+    <mxCell id="47" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="27" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Admin → PDF -->
+    <mxCell id="48" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="28" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+    <!-- Manager → Se connecter -->
+    <mxCell id="50" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="20" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Manager → Créer offre -->
+    <mxCell id="51" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="23" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Manager → Cycle de vie -->
+    <mxCell id="52" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="24" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Manager → Consulter offres -->
+    <mxCell id="53" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="25" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Manager → Évaluer -->
+    <mxCell id="54" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="26" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Manager → Documents -->
+    <mxCell id="55" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="27" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Manager → PDF -->
+    <mxCell id="56" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="11" target="28" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+    <!-- Analyst → Se connecter -->
+    <mxCell id="60" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="12" target="20" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Analyst → Consulter offres -->
+    <mxCell id="61" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="12" target="25" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Analyst → Évaluer -->
+    <mxCell id="62" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="12" target="26" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Analyst → Documents -->
+    <mxCell id="63" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="12" target="27" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Analyst → PDF -->
+    <mxCell id="64" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="12" target="28" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+    <!-- Viewer → Se connecter -->
+    <mxCell id="70" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="13" target="20" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Viewer → Consulter offres -->
+    <mxCell id="71" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="13" target="25" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+    <!-- Société → Consulter portail -->
+    <mxCell id="80" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="14" target="29" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+    <!-- Société → Soumettre -->
+    <mxCell id="81" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="14" target="30" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+  </root>
+</mxGraphModel>
