@@ -79,7 +79,7 @@ US-07 & Moyenne & Upload de documents PDF/DOCX associés à une offre & S2 & \ch
 \hline
 US-08 & Haute & Contrôle d'accès RBAC appliqué sur tous les endpoints & S3 & \checkmark \\
 \hline
-US-09 & Haute & Documents financiers chiffrés AES-256-GCM à l'upload & S3 & \checkmark \\
+US-09 & Haute & Documents financiers chiffrés AES-256-GCM à l'upload & S4 & \checkmark \\
 \hline
 US-10 & Haute & Journal d'audit enregistrant toutes les opérations d'écriture & S3 & \checkmark \\
 \hline
@@ -109,24 +109,24 @@ US-14 & Moyenne & Pipeline CI (lint flake8 + pytest) déclenché à chaque push 
 Le projet a été découpé en quatre sprints hebdomadaires, chacun centré sur un objectif livrable.
 
 \begin{description}
-    \item[Sprint 1 (6--12 août)] Fondations : Docker Compose, Django, PostgreSQL, authentification JWT, modèle User avec rôles. Livrable : connexion fonctionnelle, endpoints auth testés via Postman.
+    \item[Sprint 1 (6--12 août) — Authentification MVP] Mise en place de l'environnement Docker Compose avec PostgreSQL, modélisation de l'entité User avec les quatre rôles, implémentation de l'authentification JWT (login, refresh, logout), développement du frontend d'authentification (formulaire de connexion, \texttt{AuthContext}), et tests des endpoints API et de l'interface. Livrable : connexion fonctionnelle bout en bout, accès protégé par token.
 
-    \item[Sprint 2 (13--19 août)] Fonctionnalités métier : offres, candidats, soumissions, frontend React connecté à l'API, upload de documents. Livrable : un manager peut créer une offre et enregistrer des soumissions.
+    \item[Sprint 2 (13--19 août) — Fonctionnalités cœur] Développement du dashboard des offres en React, CRUD complet des offres côté backend, gestion des candidats et soumissions, upload de documents, et mise en place des règles RBAC de base. Livrable : un manager peut créer une offre et enregistrer des soumissions ; les rôles sont appliqués sur les routes principales.
 
-    \item[Sprint 3 (20--26 août)] Sécurité et notifications : RBAC, journal d'audit, monitoring des délais, chiffrement AES-256-GCM, notifications dans l'application. Livrable : rôles appliqués, documents sensibles chiffrés, alertes actives.
+    \item[Sprint 3 (20--26 août) — Sécurité \& fiabilité] Finalisation du RBAC avec les permissions DRF sur tous les endpoints, journal d'audit, notifications in-app, monitoring des délais (scheduler), et amélioration de la validation à l'upload (types MIME, taille). Livrable : contrôle d'accès complet, audit actif, alertes de délais fonctionnelles.
 
-    \item[Sprint 4 (27 août -- 6 septembre)] Portail public, rapports PDF, tests, pipeline CI, documentation. Livrable : application complète, testée, déployable en une commande.
+    \item[Sprint 4 (27 août -- 6 septembre) — Finalisation \& déploiement] Portail public (soumissions sans compte), export PDF des rapports d'offres, chiffrement AES-256-GCM des documents sensibles, tests d'intégration, pipeline CI GitHub Actions, et documentation. Livrable : application complète, sécurisée, testée et déployable en une commande.
 \end{description}
 
 \subsubsection{Bilan des sprints}
 
 \textbf{Sprint 1.} La configuration du réseau Docker (communication inter-conteneurs, variables d'environnement) a pris plus de temps qu'estimé. La configuration du cookie httpOnly pour le refresh token a nécessité une recherche sur la gestion des cookies cross-origin avec DRF. Le livrable a été atteint avec un jour de retard, rattrapé en début de sprint 2.
 
-\textbf{Sprint 2.} La complexité de l'upload de documents (validation MIME, gestion des fichiers Django) a conduit à reporter le chiffrement AES au sprint 3, où il a été intégré naturellement avec les autres fonctionnalités de sécurité. Les fonctionnalités métier principales ont été livrées dans les délais.
+\textbf{Sprint 2.} La complexité de l'upload de documents (validation MIME, gestion des fichiers Django) a occupé une partie significative du sprint. Les règles RBAC de base ont été intégrées en fin de sprint pour sécuriser les routes principales. Les fonctionnalités cœur ont été livrées dans les délais.
 
-\textbf{Sprint 3.} L'intégration d'AES-256-GCM a nécessité une journée de recherche non planifiée sur la bibliothèque \texttt{cryptography} (gestion du nonce, format de stockage). Le scheduler de monitoring des délais a été simplifié : une boucle shell dans un conteneur dédié plutôt qu'une intégration Celery, jugée trop complexe pour le délai disponible.
+\textbf{Sprint 3.} La finalisation du RBAC sur l'ensemble des endpoints a nécessité une revue systématique des permissions DRF. Le scheduler de monitoring des délais a été simplifié : une boucle shell dans un conteneur dédié plutôt qu'une intégration Celery, jugée trop complexe pour le délai disponible. L'amélioration de la validation à l'upload (types MIME, taille maximale) a été ajoutée sans impact sur les fonctionnalités existantes.
 
-\textbf{Sprint 4.} La configuration du pipeline GitHub Actions (base PostgreSQL de test, variables d'environnement CI) a été le dernier élément ajouté, achevé dans les deux derniers jours du stage. La documentation a été finalisée en parallèle.
+\textbf{Sprint 4.} L'intégration d'AES-256-GCM a nécessité une journée de recherche non planifiée sur la bibliothèque \texttt{cryptography} (gestion du nonce, format de stockage \texttt{nonce || ciphertext || tag}). La configuration du pipeline GitHub Actions (base PostgreSQL de test, variables d'environnement CI) a été achevée dans les deux derniers jours du stage. La documentation a été finalisée en parallèle.
 
 \subsection{Gestion des risques}
 
@@ -155,30 +155,30 @@ Incompatibilité entre services Docker (version PostgreSQL, réseau) & Faible & 
 
 \subsection{Diagramme de cas d'utilisation}
 
+
+Le diagramme de cas d'utilisation (figure~\ref{fig:usecase}) présente les interactions entre les cinq acteurs du système et les fonctionnalités exposées. Les acteurs internes (Admin, Manager, Analyst, Viewer) s'authentifient via JWT. L'acteur externe (société soumissionnaire) accède uniquement au portail public sans authentification.
+\newpage
+
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.9\textwidth]{images/use_case.png}
+\includegraphics[width=0.8\textwidth]{images/use_case.png}
 \caption{Diagramme de cas d'utilisation}
 \label{fig:usecase}
 \end{figure}
 
-Le diagramme de cas d'utilisation (figure~\ref{fig:usecase}) présente les interactions entre les cinq acteurs du système et les fonctionnalités exposées. Les acteurs internes (Admin, Manager, Analyst, Viewer) s'authentifient via JWT. L'acteur externe (société soumissionnaire) accède uniquement au portail public sans authentification.
 
 \subsection{Diagramme d'activité -- Cycle de vie d'une offre}
 
+
+
 \begin{figure}[ht]
 \centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Diagramme d'activité : cycle de vie d'une offre]}
-    \vspace{2cm}
-  \end{minipage}%
-}
+\includegraphics[width=0.8\textwidth]{images/activity_diagram.drawio.png}
 \caption{Diagramme d'activité : cycle de vie d'une offre}
 \label{fig:activity}
 \end{figure}
+
+
 
 Le cycle de vie d'une offre est contrôlé côté serveur par la méthode \texttt{can\_transition\_to()} du modèle \texttt{OfferCall}. Les transitions autorisées sont :
 
@@ -194,21 +194,9 @@ Le cycle de vie d'une offre est contrôlé côté serveur par la méthode \textt
 
 L'application repose sur une architecture monolithe modulaire : un seul processus Django contenant huit applications indépendantes, déployé derrière un proxy Nginx gérant le TLS.
 
-\begin{figure}[ht]
-\centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Architecture globale du système]}
-    \vspace{2cm}
-  \end{minipage}%
-}
-\caption{Architecture globale du système}
-\label{fig:architecture}
-\end{figure}
+\vspace{1.2cm}
 
-Le flux d'une requête authentifiée :
+\noindent Le flux d'une requête authentifiée :
 
 \begin{enumerate}
     \item Le navigateur envoie la requête HTTPS sur le port 443.
@@ -216,6 +204,21 @@ Le flux d'une requête authentifiée :
     \item Django traite la requête : authentification JWT, vérification du rôle, logique métier, accès PostgreSQL via l'ORM.
     \item La réponse remonte par Nginx vers le client.
 \end{enumerate}
+
+
+\newpage
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{images/architecture.png}
+\caption{Architecture globale du système}
+\label{fig:activity}
+\end{figure}
+
+
+
+
+
 
 \subsection{Monolithe modulaire vs microservices}
 
@@ -252,21 +255,17 @@ Tous les services disposent de vérifications de santé (health checks). Les ser
 
 Le modèle de données comprend sept entités principales, représentées dans le diagramme entité-relation (figure~\ref{fig:erd}).
 
+
 \begin{figure}[ht]
 \centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Diagramme entité-relation]}
-    \vspace{2cm}
-  \end{minipage}%
-}
+\includegraphics[width=1\textwidth]{images/erd.png}
 \caption{Diagramme entité-relation}
 \label{fig:erd}
 \end{figure}
 
-Les choix de conception notables sont :
+
+
+\noindent Les choix de conception notables sont :
 
 \begin{description}
     \item[UUID comme clé primaire] Tous les modèles utilisent \texttt{UUIDField} comme clé primaire. Contrairement aux entiers auto-incrémentés, les UUID ne révèlent pas le volume de données et empêchent l'énumération (\texttt{/offers/1}, \texttt{/offers/2}).
@@ -333,19 +332,19 @@ Les transitions d'état sont des endpoints POST dédiés (et non une modificatio
 
 Le schéma d'authentification repose sur deux tokens aux durées de vie différentes : l'access token (15 minutes) et le refresh token (7 jours).
 
-\begin{figure}[ht]
+\newpage
+
+\begin{figure}[!h]
 \centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Diagramme de séquence : flux d'authentification]}
-    \vspace{2cm}
-  \end{minipage}%
-}
+\includegraphics[width=1\textwidth]{images/seq_login_vf.png}
 \caption{Diagramme de séquence : flux d'authentification}
 \label{fig:seqlogin}
 \end{figure}
+
+
+\clearpage
+
+
 
 L'access token est stocké en mémoire React (variable d'état dans \texttt{AuthContext}). Ce choix est délibéré : stocker le token dans \texttt{localStorage} l'exposerait aux attaques XSS, une vulnérabilité classique du top 10 OWASP. Un script malveillant injecté dans la page pourrait lire \texttt{localStorage} mais ne peut pas accéder à une variable JavaScript en mémoire appartenant à un autre contexte.
 
@@ -400,17 +399,13 @@ Pour chaque fichier chiffré, un nonce de 12 octets est généré aléatoirement
 
 \begin{figure}[ht]
 \centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Diagramme de séquence : soumission portail public]}
-    \vspace{2cm}
-  \end{minipage}%
-}
+\includegraphics[width=1\textwidth]{images/seq_portal.png}
 \caption{Diagramme de séquence : soumission portail public}
 \label{fig:seqportal}
 \end{figure}
+
+
+
 
 La soumission via le portail public suit un flux en plusieurs étapes : vérification de l'offre (statut PUBLISHED), contrôle de la deadline, validation des données, création ou récupération du candidat (upsert par email), vérification d'unicité, création de la soumission, upload du document, et notification du responsable assigné.
 

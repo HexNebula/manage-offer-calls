@@ -1,7 +1,6 @@
 \chapter{Réalisation et Mise en Œuvre}
 
-\begin{spacing}{1.25}
-{\large
+\onehalfspacing
 
 Ce chapitre décrit la concrétisation des choix de conception présentés au chapitre précédent. Il détaille l'environnement de développement, l'implémentation des modules backend et frontend, les interfaces utilisateur réalisées, ainsi que les résultats des tests de validation. L'objectif est de démontrer que la solution développée répond aux exigences fonctionnelles et non-fonctionnelles identifiées en début de projet.
 
@@ -39,30 +38,26 @@ GitHub Actions & -- & Pipeline CI (lint + tests) \\
 \hline
 VS Code & -- & Éditeur de code \\
 \hline
-Postman & -- & Tests manuels API \\
+Postman & -- & Tests manuels de l'API \\
 \hline
 \end{tabularx}
 \end{table}
 
 \subsection{Structure du projet}
 
-Le projet est organisé en deux répertoires principaux (\texttt{backend/} et
-\texttt{frontend/}), complétés par la configuration Docker et Nginx.
-Le backend Django suit une architecture modulaire : chaque domaine fonctionnel
-est une application Django distincte avec ses propres modèles, vues, sérialiseurs
-et URLs.
+Le projet est organisé en deux répertoires principaux (\texttt{backend/} et \texttt{frontend/}), complétés par la configuration Docker et Nginx. Le backend Django suit une architecture modulaire : chaque domaine fonctionnel est une application Django distincte avec ses propres modèles, vues, sérialiseurs et URLs.
 
 \begin{lstlisting}[style=PythonStyle, language={}, caption={Structure du projet}]
 appels-offres/
 |-- docker-compose.yml
 |-- nginx/
 |   |-- nginx.conf
-|   `-- certs/         # Certificat SSL auto-signe (demo)
+|   `-- certs/         # Certificat SSL auto-signé (démonstration)
 |-- backend/
 |   |-- config/        # Settings, urls.py racine, wsgi.py
 |   `-- apps/
-|       |-- authentication/   # User, JWT, RBAC, seed_demo
-|       |-- offers/           # OfferCall, state machine
+|       |-- authentication/   # User, JWT, RBAC
+|       |-- offers/           # OfferCall, machine à états
 |       |-- candidates/       # Candidate, Submission
 |       |-- documents/        # Upload, AES-256-GCM
 |       |-- notifications/    # Notification, check_deadlines
@@ -72,7 +67,7 @@ appels-offres/
 |-- frontend/
 |   `-- src/
 |       |-- contexts/         # AuthContext
-|       |-- pages/            # Login, Dashboard, offers, portal...
+|       |-- pages/            # Login, Dashboard, offres, portail...
 |       |-- services/         # Wrappers API par domaine
 |       `-- hooks/            # useAuth, useNotifications
 `-- .github/workflows/ci.yml  # GitHub Actions
@@ -83,10 +78,8 @@ appels-offres/
 À chaque push sur la branche \texttt{main}, GitHub Actions exécute automatiquement :
 
 \begin{enumerate}
-    \item \textbf{Lint} : \texttt{flake8} vérifie le style et la qualité du code
-    Python (longueur de lignes, imports inutilisés, variables non utilisées).
-    \item \textbf{Tests} : \texttt{pytest-django} exécute les tests d'intégration
-    avec une base de données PostgreSQL dédiée au pipeline.
+    \item \textbf{Lint} : \texttt{flake8} vérifie le style et la qualité du code Python (longueur des lignes, imports inutilisés, variables non utilisées).
+    \item \textbf{Tests} : \texttt{pytest-django} exécute les tests d'intégration avec une base de données PostgreSQL dédiée au pipeline.
 \end{enumerate}
 
 \begin{figure}[ht]
@@ -95,25 +88,19 @@ appels-offres/
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Pipeline CI GitHub Actions (vert) — screenshot depuis GitHub Actions]}
+    \textit{[À INSÉRER — Pipeline CI GitHub Actions — capture d'écran]}
     \vspace{2cm}
   \end{minipage}%
 }
-\caption{Pipeline CI GitHub Actions}
+\caption{Pipeline CI GitHub Actions (lint + tests)}
 \label{fig:ci}
 \end{figure}
-
-% -------------------------------------------------------------------
 
 \section{Implémentation du backend}
 
 \subsection{Authentification et RBAC}
 
-Le modèle \texttt{User} étend \texttt{AbstractBaseUser} de Django pour définir
-le champ \texttt{email} comme identifiant principal (et non le nom d'utilisateur).
-Un champ \texttt{role} de type \texttt{CharField} avec des choix énumérés
-(\texttt{ADMIN}, \texttt{MANAGER}, \texttt{ANALYST}, \texttt{VIEWER}) définit
-le rôle de chaque utilisateur.
+Le modèle \texttt{User} étend \texttt{AbstractBaseUser} de Django pour définir le champ \texttt{email} comme identifiant principal (et non le nom d'utilisateur). Un champ \texttt{role} de type \texttt{CharField} avec des choix énumérés (\texttt{ADMIN}, \texttt{MANAGER}, \texttt{ANALYST}, \texttt{VIEWER}) définit le rôle de chaque utilisateur.
 
 \begin{lstlisting}[style=PythonStyle, language=Python, caption={Modèle User}]
 class User(AbstractBaseUser, PermissionsMixin):
@@ -126,23 +113,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
 \end{lstlisting}
 
-Les permissions DRF sont définies comme classes réutilisables :
-\texttt{IsManagerOrAdmin} (création/modification d'offres),
-\texttt{IsAnalystOrAbove} (lecture de toutes les offres, évaluation),
-\texttt{IsAdminRole} (gestion des utilisateurs, journal d'audit).
-Ces classes sont appliquées au niveau de chaque vue, centralisées dans
-\texttt{apps/authentication/permissions.py}.
+Les permissions DRF sont définies comme des classes réutilisables : \texttt{IsManagerOrAdmin} (création et modification d'offres), \texttt{IsAnalystOrAbove} (lecture de toutes les offres, évaluation), \texttt{IsAdminRole} (gestion des utilisateurs, journal d'audit). Ces classes sont appliquées au niveau de chaque vue et centralisées dans \texttt{apps/authentication/permissions.py}.
 
-L'endpoint de connexion génère un access token (durée 15 minutes) retourné dans
-le corps de la réponse JSON, et un refresh token (durée 7 jours) placé dans
-un cookie sécurisé. La bibliothèque \texttt{djangorestframework-simplejwt}
-gère la génération, la validation et la révocation des tokens.
+L'endpoint de connexion génère un access token (durée 15 minutes) retourné dans le corps de la réponse JSON, et un refresh token (durée 7 jours) placé dans un cookie sécurisé. La bibliothèque \texttt{djangorestframework-simplejwt} gère la génération, la validation et la révocation des tokens.
 
 \subsection{Gestion des offres et machine à états}
 
-Le modèle \texttt{OfferCall} implémente une machine à états explicite via la méthode
-\texttt{can\_transition\_to()} qui vérifie si la transition demandée est autorisée
-depuis le statut courant.
+Le modèle \texttt{OfferCall} implémente une machine à états explicite. Les transitions autorisées sont définies dans un dictionnaire Python qui associe à chaque statut la liste des statuts atteignables.
 
 \begin{lstlisting}[style=PythonStyle, language=Python, caption={Machine à états des offres}]
 ALLOWED_TRANSITIONS = {
@@ -157,17 +134,13 @@ def can_transition_to(self, new_status):
     return new_status in ALLOWED_TRANSITIONS.get(self.status, [])
 \end{lstlisting}
 
-Chaque transition est un endpoint POST dédié (\texttt{/publish/}, \texttt{/close/},
-\texttt{/award/}, \texttt{/cancel/}). Cette conception interdit toute modification
-directe du champ \texttt{status} via PATCH, garantissant que la logique de
-validation est toujours exécutée.
+Chaque transition est un endpoint POST dédié (\texttt{/publish/}, \texttt{/close/}, \texttt{/award/}, \texttt{/cancel/}). Cette conception interdit toute modification directe du champ \texttt{status} via PATCH, garantissant que la logique de validation est toujours exécutée.
 
 \subsection{Documents et chiffrement AES-256-GCM}
 
-L'upload de documents s'effectue en multipart/form-data. Avant le stockage,
-le fichier passe par une validation (type MIME dans la liste blanche PDF/DOCX/XLSX,
-taille inférieure à 10 Mo), puis par le module de chiffrement si le flag
-\texttt{is\_sensitive} est activé.
+L'upload de documents s'effectue en multipart/form-data. Avant le stockage, le fichier passe par une validation (type MIME dans la liste blanche PDF/DOCX/XLSX, taille inférieure à 10 Mo), puis par le module de chiffrement si le flag \texttt{is\_sensitive} est activé.
+
+L'algorithme AES-256-GCM garantit à la fois la confidentialité (les données sont illisibles sans la clé) et l'intégrité (le tag d'authentification détecte toute modification). Pour chaque fichier chiffré, un nonce (nombre utilisé une seule fois) de 12 octets est généré aléatoirement, ce qui garantit que deux fichiers identiques produisent des chiffrés différents.
 
 \begin{lstlisting}[style=PythonStyle, language=Python, caption={Chiffrement AES-256-GCM}]
 def encrypt_file(data: bytes, key: bytes) -> bytes:
@@ -177,36 +150,23 @@ def encrypt_file(data: bytes, key: bytes) -> bytes:
     return nonce + ciphertext  # nonce (12B) || ciphertext || tag (16B)
 \end{lstlisting}
 
-Le déchiffrement est \textbf{transparent} pour le client : lors du téléchargement,
-Django détecte \texttt{is\_encrypted=True}, lit les 12 premiers octets comme nonce,
-déchiffre le reste, et retourne le fichier en clair dans la réponse HTTP.
-La clé ne transite jamais en dehors du processus Django.
+Le déchiffrement est transparent pour le client : lors du téléchargement, Django détecte \texttt{is\_encrypted=True}, lit les 12 premiers octets comme nonce, déchiffre le reste, et retourne le fichier en clair dans la réponse HTTP. La clé ne transite jamais en dehors du processus Django.
 
 \subsection{Portail public}
 
-L'application \texttt{portal} est isolée : elle ne partage aucune classe de
-permission ni aucun sérialiseur avec les applications internes.
-Elle importe uniquement les modèles (\texttt{OfferCall}, \texttt{Candidate},
-\texttt{Submission}, \texttt{Document}).
+L'application \texttt{portal} est isolée : elle ne partage aucune classe de permission ni aucun sérialiseur avec les applications internes. Elle importe uniquement les modèles (\texttt{OfferCall}, \texttt{Candidate}, \texttt{Submission}, \texttt{Document}).
 
 La vue \texttt{PublicSubmitView} implémente trois protections :
 
 \begin{enumerate}
-    \item \textbf{Rate limiting} : décorateur \texttt{@ratelimit(key='ip', rate='5/h', block=True)}
-    de la bibliothèque \texttt{django-ratelimit}. Un script automatisé ne peut pas
-    inonder la base de données.
-    \item \textbf{Vérification de deadline} : \texttt{timezone.now() > offer.submission\_deadline}
-    retourne HTTP 400 si la date limite est dépassée.
-    \item \textbf{Unicité} : une société ne peut pas soumettre deux fois
-    pour la même offre (identifiée par email).
+    \item \textbf{Rate limiting} : décorateur \texttt{@ratelimit(key='ip', rate='5/h', block=True)} de la bibliothèque \texttt{django-ratelimit}. Un script automatisé ne peut pas inonder la base de données. (Dans le contexte de démonstration, ce seuil est volontairement bas ; en production, il serait augmenté.)
+    \item \textbf{Vérification de deadline} : \texttt{timezone.now() > offer.submission\_deadline} retourne HTTP 400 si la date limite est dépassée.
+    \item \textbf{Unicité} : une société ne peut pas soumettre deux fois une proposition pour la même offre (identifiée par email).
 \end{enumerate}
 
 \subsection{Audit et notifications}
 
-Le journal d'audit est alimenté par des appels explicites à \texttt{AuditLog.objects.create()}
-dans chaque vue lors des opérations d'écriture. Chaque entrée enregistre :
-l'utilisateur (nullable pour le portail), l'action, le type de ressource,
-son identifiant, les modifications en JSON et l'adresse IP.
+Le journal d'audit est alimenté par des appels explicites à \texttt{AuditLog.objects.create()} dans chaque vue lors des opérations d'écriture. Chaque entrée enregistre : l'utilisateur (nullable pour le portail), l'action, le type de ressource, son identifiant, les modifications au format JSON et l'adresse IP.
 
 Le scheduler s'exécute dans un conteneur Docker dédié en boucle :
 
@@ -216,40 +176,23 @@ while true; do
 done
 \end{lstlisting}
 
-La commande \texttt{check\_deadlines} interroge la base de données pour toutes les
-offres dont la deadline approche (dans les 24 heures) et crée les notifications
-correspondantes pour les responsables assignés.
-
-% -------------------------------------------------------------------
+La commande \texttt{check\_deadlines} interroge la base de données pour toutes les offres dont la deadline approche (dans les 24 heures) et crée les notifications correspondantes pour les responsables assignés.
 
 \section{Implémentation du frontend}
 
 \subsection{Gestion de l'authentification}
 
-L'\texttt{AuthContext} React centralise l'état d'authentification :
-l'access token est stocké dans une variable d'état (mémoire), jamais dans
-\texttt{localStorage} ou \texttt{sessionStorage}. Au montage de l'application,
-un appel silencieux à \texttt{/api/auth/refresh/} restaure le token depuis le
-cookie httpOnly si la session est encore valide.
+Le contexte \texttt{AuthContext} de React centralise l'état d'authentification : l'access token est stocké dans une variable d'état (mémoire), jamais dans \texttt{localStorage} ou \texttt{sessionStorage}. Au montage de l'application, un appel silencieux à \texttt{/api/auth/refresh/} restaure le token depuis le cookie httpOnly si la session est encore valide.
 
-Un intercepteur Axios ajoute automatiquement le header
-\texttt{Authorization: Bearer <token>} à chaque requête, et gère le rafraîchissement
-transparent en cas de réponse 401 (token expiré).
+Un intercepteur Axios ajoute automatiquement l'en-tête \texttt{Authorization: Bearer <token>} à chaque requête, et gère le rafraîchissement transparent en cas de réponse 401 (token expiré).
 
-\subsection{Routing protégé par rôle}
+\subsection{Routage protégé par rôle}
 
-Les routes React sont enveloppées dans des composants de garde :
-\texttt{PrivateRoute} (authentification requise) et \texttt{RoleGuard}
-(rôle minimum requis). Un utilisateur VIEWER tentant d'accéder à la page
-de création d'offre est redirigé vers le dashboard.
+Les routes React sont enveloppées dans des composants de garde : \texttt{PrivateRoute} (authentification requise) et \texttt{RoleGuard} (rôle minimum requis). Un utilisateur VIEWER qui tente d'accéder à la page de création d'offre est redirigé vers le tableau de bord.
 
 \subsection{Portail public}
 
-Le portail utilise une instance Axios séparée (\texttt{portalApi.js}) sans header
-\texttt{Authorization}. Les pages \texttt{/portal} et \texttt{/portal/:id} sont
-accessibles sans connexion et ne partagent aucun état avec l'application interne.
-
-% -------------------------------------------------------------------
+Le portail utilise une instance Axios séparée (\texttt{portalApi.js}) sans en-tête \texttt{Authorization}. Les pages \texttt{/portal} et \texttt{/portal/:id} sont accessibles sans connexion et ne partagent aucun état avec l'application interne.
 
 \section{Interfaces et fonctionnalités}
 
@@ -261,7 +204,7 @@ accessibles sans connexion et ne partagent aucun état avec l'application intern
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Tableau de bord principal — images/dashboard.png]}
+    \textit{[À INSÉRER — Tableau de bord principal]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -277,7 +220,7 @@ accessibles sans connexion et ne partagent aucun état avec l'application intern
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Liste des offres avec filtres — images/liste\_offres.png]}
+    \textit{[À INSÉRER — Liste des offres avec filtres]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -285,9 +228,7 @@ accessibles sans connexion et ne partagent aucun état avec l'application intern
 \label{fig:liste_offres}
 \end{figure}
 
-La page de liste affiche les offres sous forme de tableau paginé avec filtres
-par statut, catégorie et recherche textuelle. Les badges colorés signalent
-l'état de chaque offre (vert : publiée, orange : en évaluation, rouge : annulée).
+La page de liste affiche les offres sous forme de tableau paginé avec filtres par statut, catégorie et recherche textuelle. Des badges colorés signalent l'état de chaque offre (vert : publiée, orange : en évaluation, rouge : annulée).
 
 \subsection{Détail d'une offre}
 
@@ -297,7 +238,7 @@ l'état de chaque offre (vert : publiée, orange : en évaluation, rouge : annul
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Détail d'une offre avec onglets — images/detail\_offre.png]}
+    \textit{[À INSÉRER — Détail d'une offre avec onglets]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -305,9 +246,7 @@ l'état de chaque offre (vert : publiée, orange : en évaluation, rouge : annul
 \label{fig:detail_offre}
 \end{figure}
 
-La page de détail est organisée en onglets : informations générales, soumissions
-des candidats (avec scores), et documents associés (avec indicateur de chiffrement
-AES-256).
+La page de détail est organisée en onglets : informations générales, soumissions des candidats (avec scores), et documents associés (avec indicateur de chiffrement AES-256).
 
 \subsection{Formulaire de création d'offre}
 
@@ -317,7 +256,7 @@ AES-256).
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Formulaire de création d'offre — images/creation\_offre.png]}
+    \textit{[À INSÉRER — Formulaire de création d'offre]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -333,7 +272,7 @@ AES-256).
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Évaluation et scoring d'une soumission — images/evaluation.png]}
+    \textit{[À INSÉRER — Évaluation et scoring d'une soumission]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -349,7 +288,7 @@ AES-256).
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Portail public : liste des offres — images/portail.png]}
+    \textit{[À INSÉRER — Portail public : liste des offres]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -363,7 +302,7 @@ AES-256).
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Formulaire de soumission publique — images/portail\_submit.png]}
+    \textit{[À INSÉRER — Formulaire de soumission publique]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -379,7 +318,7 @@ AES-256).
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Journal d'audit — images/audit.png]}
+    \textit{[À INSÉRER — Journal d'audit]}
     \vspace{2cm}
   \end{minipage}%
 }
@@ -395,15 +334,13 @@ AES-256).
   \begin{minipage}{0.85\textwidth}
     \vspace{2cm}
     \centering
-    \textit{[À INSÉRER — Exemple de rapport PDF généré — images/rapport\_pdf.png]}
+    \textit{[À INSÉRER — Exemple de rapport PDF généré]}
     \vspace{2cm}
   \end{minipage}%
 }
 \caption{Exemple de rapport PDF généré}
 \label{fig:rapport_pdf}
 \end{figure}
-
-% -------------------------------------------------------------------
 
 \section{Tests et validation}
 
@@ -419,57 +356,27 @@ Les tests d'intégration couvrent les scénarios critiques du système :
 \hline
 \textbf{Module} & \textbf{Cas testés} \\
 \hline
-Authentification & Connexion valide, credentials incorrects, refresh token, déconnexion \\
+Authentification & Connexion valide, identifiants incorrects, refresh token, déconnexion \\
 \hline
-RBAC & Accès autorisé/refusé par rôle sur les endpoints critiques \\
+RBAC & Accès autorisé ou refusé par rôle sur les endpoints critiques \\
 \hline
 Offres & Création, transitions d'état autorisées et refusées, filtres \\
 \hline
 Portail & Soumission valide, deadline dépassée, doublon, fichier invalide \\
 \hline
-Documents & Upload, download, détection chiffrement \\
+Documents & Upload, téléchargement, détection du chiffrement \\
 \hline
 \end{tabularx}
 \end{table}
 
-Les tests utilisent des fixtures par rôle (\texttt{admin\_user}, \texttt{manager\_user},
-\texttt{analyst\_user}, \texttt{viewer\_user}) et une base de données PostgreSQL
-dédiée. Chaque test est isolé dans une transaction annulée après exécution.
-
-\subsection{Résultats CI}
-
-\begin{figure}[ht]
-\centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Pipeline CI au vert : tous les tests passent — images/ci\_green.png]}
-    \vspace{2cm}
-  \end{minipage}%
-}
-\caption{Pipeline CI au vert — tous les tests passent}
-\label{fig:ci_green}
-\end{figure}
-
-Le pipeline GitHub Actions exécute à chaque push sur \texttt{main} :
-\textbf{12 tests pytest} couvrant les cas critiques, et le lint \textbf{flake8}
-sur l'ensemble du code Python. Les deux étapes passent au vert.
+Les tests utilisent des fixtures par rôle (\texttt{admin\_user}, \texttt{manager\_user}, \texttt{analyst\_user}, \texttt{viewer\_user}) et une base de données PostgreSQL dédiée. Chaque test est isolé dans une transaction annulée après exécution. L'ensemble des tests passe au vert sur le pipeline CI (figure~\ref{fig:ci}).
 
 \subsection{Tests manuels}
 
-Un script \texttt{seed\_demo.py} peuple la base de données avec un scénario
-représentatif : 6 utilisateurs (un par rôle), 6 offres à différents stades du
-cycle de vie, 6 candidats et 8 soumissions avec scores. Ce scénario a permis
-de valider le parcours complet :
-création d'offre → publication → soumission portail → évaluation → attribution
-→ export PDF → consultation journal d'audit.
+Un jeu de données de démonstration a été créé pour valider manuellement les parcours utilisateur : utilisateurs de chaque rôle, offres à différents stades, candidats et soumissions. Ce jeu a permis de tester le parcours complet : création d'offre → publication → soumission via le portail → évaluation → attribution → export PDF → consultation du journal d'audit.
 
 \section{Conclusion}
 
-Ce chapitre a présenté la mise en œuvre complète du système, de l'environnement de développement jusqu'à la validation par les tests. L'implémentation backend a démontré la robustesse de la machine à états des offres, la transparence du chiffrement AES-256-GCM et l'isolation effective du portail public. Côté frontend, la gestion sécurisée des tokens JWT et le routage par rôle garantissent une expérience utilisateur cohérente avec les exigences de sécurité. Les tests automatisés et le pipeline CI confirment la fiabilité de l'ensemble, et le script de démonstration valide le parcours complet de bout en bout.
-
-}
-\end{spacing}
+Ce chapitre a présenté la mise en œuvre complète du système, de l'environnement de développement jusqu'à la validation par les tests. L'implémentation backend a démontré la robustesse de la machine à états des offres, la transparence du chiffrement AES-256-GCM et l'isolation effective du portail public. Côté frontend, la gestion sécurisée des tokens JWT et le routage par rôle garantissent une expérience utilisateur cohérente avec les exigences de sécurité. Les tests automatisés et le pipeline CI confirment la fiabilité de l'ensemble, et les tests manuels valident les parcours fonctionnels de bout en bout.
 
 \newpage
