@@ -141,7 +141,6 @@ class OfferDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class OfferCancelView(APIView):
     permission_classes = [IsManagerOrAdmin]
 

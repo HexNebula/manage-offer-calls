@@ -108,10 +108,10 @@ class TestOfferStateTransitions:
         assert response.status_code == 200
         assert response.data['status'] == 'EVALUATION'
 
-    def test_cancel_offer_via_delete(self, api_client, manager_user, draft_offer):
+    def test_cancel_offer(self, api_client, manager_user, draft_offer):
         api_client.force_authenticate(user=manager_user)
-        url = reverse('offers:offer-detail', kwargs={'pk': draft_offer.pk})
-        response = api_client.delete(url)
+        url = reverse('offers:offer-cancel', kwargs={'pk': draft_offer.pk})
+        response = api_client.post(url)
         assert response.status_code == 200
         draft_offer.refresh_from_db()
         assert draft_offer.status == 'CANCELLED'
