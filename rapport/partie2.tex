@@ -15,21 +15,21 @@ et la sécurité intégrée (pas d'add-ons nécessaires pour les fonctionnalité
 \label{tab:techstack}
 \begin{tabularx}{\textwidth}{|l|l|X|}
 \hline
-\textbf{Couche} & \textbf{Choix retenu} & \textbf{Alternatives rejetées et raison} \\
+\textbf{Couche} & \textbf{Choix retenu} & \textbf{Justification dans le contexte du stage} \\
 \hline
-Backend & Django + DRF & Node.js (trop de bibliothèques à assembler) ; Spring Boot (verbeux, délai trop long) \\
+Backend & Django + DRF & Stack maîtrisée. L'administration Django et les modules DRF (sérialisation, permissions, pagination) évitent de réimplémenter des fonctionnalités standard, ce qui est décisif sur un délai d'un mois. \\
 \hline
-Frontend & React.js + Vite & Angular (courbe d'apprentissage) ; Vue.js (écosystème moins mature pour tables/PDF) \\
+Frontend & React.js + Vite & Framework connu, documentation abondante, large choix de composants UI. Le choix est pragmatique : utiliser ce qu'on maîtrise plutôt que d'apprendre un nouveau framework en parallèle du développement. \\
 \hline
-Base de données & PostgreSQL & MySQL (moins performant sur JSON, TIMESTAMPTZ, recherche plein texte) \\
+Base de données & PostgreSQL & Standard de facto avec Django. Support natif du type JSON (utile pour \texttt{AuditLog.changes}) et de \texttt{TIMESTAMPTZ} pour la gestion précise des deadlines. \\
 \hline
-Authentification & JWT (simplejwt) & Sessions (état serveur difficile à scaler) ; OAuth (surcharge pour usage interne) \\
+Authentification & JWT (simplejwt) & Bibliothèque officielle de l'écosystème DRF, intégrable en quelques heures. La solution couvre le besoin (usage interne, une seule organisation) sans nécessiter un serveur OAuth2 dédié, hors scope pour ce stage. \\
 \hline
-Conteneurisation & Docker Compose & Kubernetes (trop complexe pour un développeur solo, délai 1 mois) \\
+Conteneurisation & Docker Compose & Outil maîtrisé permettant de démarrer les 5 services en une commande. Kubernetes serait pertinent pour un déploiement en production à grande échelle, mais constitue une complexité opérationnelle injustifiée ici. \\
 \hline
-Proxy & Nginx + HTTPS & Caddy (moins documenté) ; Gunicorn direct (pas de TLS natif) \\
+Proxy & Nginx + HTTPS & Configuration TLS simple et bien documentée. Gunicorn seul ne gère pas le TLS nativement et n'est pas conçu pour être exposé directement. \\
 \hline
-CI/CD & GitHub Actions & Jenkins (installation, maintenance, scope creep) \\
+CI/CD & GitHub Actions & CI gratuite, intégrée au dépôt, sans infrastructure à maintenir. Adapté à un projet solo avec un seul environnement cible. \\
 \hline
 \end{tabularx}
 \end{table}
@@ -228,12 +228,12 @@ Incompatibilité entre services Docker (version PostgreSQL, réseau)
 
 \subsection{Diagramme de cas d'utilisation}
 
-% TODO: Insérer diagramme UML cas d'utilisation
-% Acteurs : Admin, Manager, Analyst, Viewer, Société externe
-% UC principaux : Se connecter, Gérer les offres, Évaluer soumissions,
-%   Gérer utilisateurs, Exporter PDF, Accéder portail public, Soumettre offre
-
-% \insererfigure{images/use_case.png}{9cm}{Diagramme de cas d'utilisation}{usecase}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\textwidth]{images/use_case.png}
+\caption{Diagramme de cas d'utilisation}
+\label{fig:usecase}
+\end{figure}
 
 Le diagramme de cas d'utilisation (figure~\ref{fig:usecase}) présente les interactions
 entre les cinq acteurs du système et les fonctionnalités exposées.
@@ -243,8 +243,19 @@ sans authentification.
 
 \subsection{Diagramme d'activité -- Cycle de vie d'une offre}
 
-% TODO: Insérer diagramme d'activité
-% \insererfigure{images/activity_lifecycle.png}{8cm}{Diagramme d'activité : cycle de vie d'une offre}{activity}
+\begin{figure}[ht]
+\centering
+\fbox{%
+  \begin{minipage}{0.85\textwidth}
+    \vspace{2cm}
+    \centering
+    \textit{[À INSÉRER — Diagramme d'activité : cycle de vie d'une offre — renommer activity\_diagram.drawio.png en activity\_lifecycle.png]}
+    \vspace{2cm}
+  \end{minipage}%
+}
+\caption{Diagramme d'activité : cycle de vie d'une offre}
+\label{fig:activity}
+\end{figure}
 
 Le cycle de vie d'une offre est contrôlé côté serveur par la méthode
 \texttt{can\_transition\_to()} du modèle \texttt{OfferCall}. Les transitions
@@ -269,8 +280,19 @@ L'application repose sur une architecture \textbf{monolithe modulaire} :
 un seul processus Django contenant huit applications indépendantes, déployé
 derrière un proxy Nginx gérant le TLS.
 
-% TODO: Insérer schéma architecture globale
-% \insererfigure{images/architecture.png}{9cm}{Architecture globale du système}{architecture}
+\begin{figure}[ht]
+\centering
+\fbox{%
+  \begin{minipage}{0.85\textwidth}
+    \vspace{2cm}
+    \centering
+    \textit{[À INSÉRER — Architecture globale du système — exporter vers images/architecture.png]}
+    \vspace{2cm}
+  \end{minipage}%
+}
+\caption{Architecture globale du système}
+\label{fig:architecture}
+\end{figure}
 
 Le flux d'une requête authentifiée :
 
@@ -328,8 +350,19 @@ que \texttt{db} soit déclaré sain (\texttt{condition: service\_healthy}).
 Le modèle de données comprend sept entités principales,
 représentées dans le diagramme entité-relation (figure~\ref{fig:erd}).
 
-% TODO: Insérer diagramme ER
-% \insererfigure{images/erd.png}{10cm}{Diagramme entité-relation}{erd}
+\begin{figure}[ht]
+\centering
+\fbox{%
+  \begin{minipage}{0.85\textwidth}
+    \vspace{2cm}
+    \centering
+    \textit{[À INSÉRER — Diagramme entité-relation — exporter vers images/erd.png]}
+    \vspace{2cm}
+  \end{minipage}%
+}
+\caption{Diagramme entité-relation}
+\label{fig:erd}
+\end{figure}
 
 Les choix de conception notables sont :
 
@@ -415,8 +448,19 @@ est toujours exécutée côté serveur, quelle que soit la requête entrante.
 Le schéma d'authentification repose sur deux tokens aux durées de vie différentes :
 l'access token (15 minutes) et le refresh token (7 jours).
 
-% TODO: Insérer diagramme de séquence -- login flow
-% \insererfigure{images/seq_login.png}{8cm}{Diagramme de séquence : flux d'authentification}{seqlogin}
+\begin{figure}[ht]
+\centering
+\fbox{%
+  \begin{minipage}{0.85\textwidth}
+    \vspace{2cm}
+    \centering
+    \textit{[À INSÉRER — Diagramme de séquence : flux d'authentification — exporter vers images/seq\_login.png]}
+    \vspace{2cm}
+  \end{minipage}%
+}
+\caption{Diagramme de séquence : flux d'authentification}
+\label{fig:seqlogin}
+\end{figure}
 
 L'access token est stocké en \textbf{mémoire React} (variable d'état dans
 \texttt{AuthContext}). Ce choix est délibéré : stocker le token dans
@@ -489,8 +533,19 @@ jamais dans le code source ni dans le dépôt Git.
 
 \subsubsection{Diagramme de séquence -- Soumission portail public}
 
-% TODO: Insérer diagramme de séquence -- portail submit
-% \insererfigure{images/seq_portal.png}{8cm}{Diagramme de séquence : soumission portail public}{seqportal}
+\begin{figure}[ht]
+\centering
+\fbox{%
+  \begin{minipage}{0.85\textwidth}
+    \vspace{2cm}
+    \centering
+    \textit{[À INSÉRER — Diagramme de séquence : soumission portail public — exporter vers images/seq\_portal.png]}
+    \vspace{2cm}
+  \end{minipage}%
+}
+\caption{Diagramme de séquence : soumission portail public}
+\label{fig:seqportal}
+\end{figure}
 
 La soumission via le portail public suit un flux en sept étapes :
 vérification de l'offre (statut PUBLISHED), contrôle de la deadline, validation
