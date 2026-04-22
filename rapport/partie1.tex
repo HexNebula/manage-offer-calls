@@ -1,13 +1,13 @@
 \chapter{Cahier des Charges}
 
-\begin{spacing}{1.25}
-{\large
+\onehalfspacing
+
+Ce chapitre pose les fondations du projet en présentant le contexte dans lequel il s'inscrit. Il introduit l'organisme d'accueil, définit le domaine des appels d'offres et ses enjeux, puis détaille les besoins fonctionnels et non-fonctionnels du système. Une étude des solutions existantes vient ensuite justifier le choix d'un développement sur mesure.
 
 \section{Présentation de l'organisme d'accueil}
 
-N+ONE DATACENTERS est un acteur majeur dans le domaine des activités Cloud au Maroc et en Afrique. Depuis sa création en 2008, l’entreprise produit et commercialise des services de réseaux, d’hébergement et d’infogérance de systèmes d’information. Elle possède deux centres d’hébergement situés au Maroc, implantés dans différentes zones sismiques afin de garantir une haute disponibilité des données. N+ONE DATACENTERS propose également des espaces et des services de location de ressources informatiques matérielles dans un cadre dédié, ce qui permet, selon les besoins des clients, un hébergement des données avec une gouvernance territoriale assurée.
+N+ONE DATACENTERS est un acteur majeur dans le domaine des activités Cloud au Maroc et en Afrique. Depuis sa création en 2008, l'entreprise produit et commercialise des services de réseaux, d'hébergement et d'infogérance de systèmes d'information. Elle possède deux centres d'hébergement situés au Maroc, implantés dans différentes zones sismiques afin de garantir une haute disponibilité des données. N+ONE DATACENTERS propose également des espaces et des services de location de ressources informatiques matérielles dans un cadre dédié, ce qui permet, selon les besoins des clients, un hébergement des données avec une gouvernance territoriale assurée.
 
-  
 \begin{figure}[!h]
   \centering
   \includegraphics[width=0.4\textwidth]{/home/an2s/Documents/Stage_2A/rapport/images/none.png}
@@ -17,34 +17,27 @@ N+ONE DATACENTERS est un acteur majeur dans le domaine des activités Cloud au M
 
 Pour compléter son offre et répondre de manière intégrée aux besoins du marché, N+ONE collabore étroitement avec OneCloud, sa division spécialisée dans les services de cloud computing. Tandis que N+ONE se concentre sur l'infrastructure physique avec ses datacenters certifiés Tier III, OneCloud fournit des services cloud publics et privés, ainsi qu'un accompagnement personnalisé des clients dans leurs projets de migration et de transformation cloud. Cette approche hybride permet de combiner efficacement l'hébergement des services legacy en colocation avec les solutions cloud modernes.
 
-
 \begin{figure}[!h]
   \centering
   \includegraphics[width=0.3\textwidth]{/home/an2s/Documents/Stage_2A/rapport/images/onecloud.png}
   \caption{Logo de OneCloud}
   \label{fig:onecloud}
 \end{figure}
-% -------------------------------------------------------------------
 
-  \subsection{Offres de la sociétés N+ONE DATACENTERS}
-  N+ONE DATACENTERS propose des services d'hébergement informatique évolutifs, pratiques et compétitifs, adaptés à chaque client. Grâce à sa double compétence en hébergement et en réseaux, N+ONE offre à ses clients une plateforme hautement fiable et résiliente, disponible 24h sur 24. Cette offre permet à l'entreprise cliente de bénéficier d'une tranquillité d'esprit totale, et de se concentrer sur son cœur de métier et sa stratégie, tandis que N+ONE gère l'ensemble de son infrastructure informatique selon ses besoins.
+\subsection{Offres de la société N+ONE DATACENTERS}
 
-
+N+ONE DATACENTERS propose des services d'hébergement informatique évolutifs, pratiques et compétitifs, adaptés à chaque client. Grâce à sa double compétence en hébergement et en réseaux, N+ONE offre à ses clients une plateforme hautement fiable et résiliente, disponible 24h sur 24. Cette offre permet à l'entreprise cliente de bénéficier d'une tranquillité d'esprit totale, et de se concentrer sur son cœur de métier et sa stratégie, tandis que N+ONE gère l'ensemble de son infrastructure informatique selon ses besoins.
 
 \begin{figure}[!h]
   \centering
   \includegraphics[width=0.5\textwidth]{/home/an2s/Documents/Stage_2A/rapport/images/dc_services.png}
   \caption{Principaux services proposés par N+ONE DATACENTERS}
-  \label{fig:onecloud}
+  \label{fig:dc_services}
 \end{figure}
-
 
 \subsection{Empreinte géographique}
 
 L'entreprise N+ONE DATACENTERS déploie une infrastructure technologique de pointe dans plusieurs régions stratégiques pour accompagner ses clients et partenaires dans leur transformation digitale. Ces initiatives témoignent de son ambition de devenir un acteur clé de l'infrastructure numérique en Afrique et au-delà.
-
-
-
 
 \begin{figure}[h]
   \centering
@@ -53,11 +46,9 @@ L'entreprise N+ONE DATACENTERS déploie une infrastructure technologique de poin
   \label{fig:geography}
 \end{figure}
 
-
 \subsection{Dates clés de la société N+ONE DATACENTERS}
 
 N+ONE a vu le jour en 2008 avec l'ouverture de son premier datacenter à Nouaceur, certifié Tier III en 2014. En 2015, elle a lancé le premier cloud national marocain, OneCloud. Son développement s'est poursuivi avec l'ouverture du datacenter de Settat en 2017 et des centres CMN2 et CMN3 en 2019. En 2020, elle a établi un partenariat avec les trois grands hyperscalers AWS, Azure et Google Cloud, avant le spin-off de OneCloud en 2021. N+ONE a ensuite élargi ses horizons à l'Afrique de l'Ouest en 2022. En 2024, Oracle est devenu son premier hyperscaler, et l'entreprise a obtenu la certification HDS. Aujourd'hui, N+ONE DATACENTERS met à disposition de ses clients une offre complète multicloud hybride, réunissant la colocation, des services IaaS via OneCloud, et l'intégration avec différents fournisseurs cloud.
-
 
 \begin{figure}[h]
   \centering
@@ -66,13 +57,10 @@ N+ONE a vu le jour en 2008 avec l'ouverture de son premier datacenter à Nouaceu
   \label{fig:important_dates}
 \end{figure}
 
-
 \subsection{Structure interne de l'entreprise}
 
 L'entreprise bénéficie d'un cadre propice à l'innovation grâce à une équipe jeune et dynamique. Les espaces de travail sont partagés et organisés en espaces de coworking, ce qui permet aux équipes d'évoluer dans un environnement positif favorisant l'échange, la collaboration, l'intelligence collective et l'émulation. Le diagramme ci-dessous présente les départements de l'entreprise ainsi que les relations hiérarchiques entre les différents rôles. Il offre une vision transparente de la structure organisationnelle de N+ONE DATACENTERS, ce qui aide à comprendre le flux de travail et la chaîne de commandement au sein de l'entreprise.
 
-
-\newpage
 \begin{figure}[!h]
   \centering
   \includegraphics[width=0.8\textwidth]{/home/an2s/Documents/Stage_2A/rapport/images/organigramme_nplusone.png}
@@ -83,8 +71,6 @@ L'entreprise bénéficie d'un cadre propice à l'innovation grâce à une équip
 \subsection{Partenaires de l'entreprise}
 
 OneCloud est la division spécialisée dans les services cloud de N+ONE, ce qui permet de tirer parti de la synergie interne pour proposer une offre intégrée en matière de cloud computing. D'autres partenariats sont établis avec des fournisseurs internationaux majeurs (Oracle, AWS, Google, Microsoft) et des spécialistes de la cybersécurité (Cloudflare, Sophos, Fortinet) pour adapter la stratégie autour d'un cloud hybride sur mesure. Dans ce modèle, OneCloud utilise l'infrastructure physique de N+ONE tout en mettant à disposition de sa maison mère son expertise en cloud public, privé et hybride, ainsi que ses compétences en accompagnement à la migration et à la transformation digitale.
-
-
 
 \begin{figure}[h]
   \centering
@@ -97,64 +83,39 @@ OneCloud est la division spécialisée dans les services cloud de N+ONE, ce qui 
 
 \subsection{Les appels d'offres}
 
-Un appel d'offres est une procédure formalisée par laquelle une organisation (le
-\textit{maître d'ouvrage}) invite des fournisseurs ou prestataires potentiels à
-soumettre des propositions commerciales et techniques pour la réalisation d'un marché.
-Cette procédure garantit la mise en concurrence, la transparence et la traçabilité
-des décisions d'achat.
+Un appel d'offres est une procédure formalisée par laquelle une organisation (le \textit{maître d'ouvrage}) invite des fournisseurs ou prestataires potentiels à soumettre des propositions commerciales et techniques pour la réalisation d'un marché. Cette procédure garantit la mise en concurrence, la transparence et la traçabilité des décisions d'achat.
 
-Le cycle de vie d'un appel d'offres se décompose en plusieurs phases distinctes,
-illustrées dans la figure~\ref{fig:lifecycle} :
+Le cycle de vie d'un appel d'offres se décompose en plusieurs phases distinctes, illustrées dans la figure~\ref{fig:lifecycle} :
 
 \begin{enumerate}
-    \item \textbf{BROUILLON (DRAFT)} : l'offre est en cours de rédaction,
-    non visible par les candidats.
-    \item \textbf{PUBLIÉE (PUBLISHED)} : l'offre est ouverte, les sociétés
-    externes peuvent soumettre leurs propositions via le portail public.
-    \item \textbf{ÉVALUATION} : la date limite de soumission est passée ;
-    les responsables évaluent et scorent les candidatures reçues.
+    \item \textbf{BROUILLON (DRAFT)} : l'offre est en cours de rédaction, non visible par les candidats.
+    \item \textbf{PUBLIÉE (PUBLISHED)} : l'offre est ouverte, les sociétés externes peuvent soumettre leurs propositions via le portail public.
+    \item \textbf{ÉVALUATION} : la date limite de soumission est passée ; les responsables évaluent et scorent les candidatures reçues.
     \item \textbf{ATTRIBUÉE (AWARDED)} : le marché est attribué au candidat retenu.
-    \item \textbf{ANNULÉE (CANCELLED)} : l'offre est interrompue à tout moment
-    avant attribution.
+    \item \textbf{ANNULÉE (CANCELLED)} : l'offre est interrompue à tout moment avant attribution.
 \end{enumerate}
 
-\begin{figure}[ht]
-\centering
-\fbox{%
-  \begin{minipage}{0.85\textwidth}
-    \vspace{2cm}
-    \centering
-    \textit{[À INSÉRER — Cycle de vie d'un appel d'offres — images/lifecycle.png]}
-    \vspace{2cm}
-  \end{minipage}%
-}
-\caption{Cycle de vie d'un appel d'offres}
-\label{fig:lifecycle}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.6\textwidth]{/home/an2s/Documents/Stage_2A/rapport/images/cycle_de_vie_appel_offre.png}
+  \caption{Cycle de vie d’un appel d’offres}
+  \label{fig:partenaires}
 \end{figure}
 
 \subsection{Les acteurs du système}
 
 Le système distingue deux catégories d'utilisateurs :
 
-\paragraph{Acteurs internes} Membres du personnel de N+ONE disposant d'un compte
-applicatif, répartis en quatre rôles :
+\paragraph{Acteurs internes} Membres du personnel de N+ONE disposant d'un compte applicatif, répartis en quatre rôles :
 
 \begin{itemize}
-    \item \textbf{ADMIN} : administrateur système, gère les comptes utilisateurs
-    et accède au journal d'audit complet.
-    \item \textbf{MANAGER} : responsable d'offres, crée et pilote les appels d'offres,
-    attribue les marchés, génère les rapports PDF.
-    \item \textbf{ANALYST} : évaluateur, score les soumissions et consulte
-    les dossiers des candidats.
-    \item \textbf{VIEWER} : lecteur seul, consulte les offres publiées
-    sans pouvoir modifier quoi que ce soit.
+    \item \textbf{ADMIN} : administrateur système, gère les comptes utilisateurs et accède au journal d'audit complet.
+    \item \textbf{MANAGER} : responsable d'offres, crée et pilote les appels d'offres, attribue les marchés, génère les rapports PDF.
+    \item \textbf{ANALYST} : évaluateur, score les soumissions et consulte les dossiers des candidats.
+    \item \textbf{VIEWER} : lecteur seul, consulte les offres publiées sans pouvoir modifier quoi que ce soit.
 \end{itemize}
 
-\paragraph{Acteurs externes} Sociétés soumissionnaires accédant uniquement au
-portail public sans créer de compte. Elles peuvent consulter les offres ouvertes
-et déposer leurs propositions directement en ligne.
-
-% -------------------------------------------------------------------
+\paragraph{Acteurs externes} Sociétés soumissionnaires accédant uniquement au portail public sans créer de compte. Elles peuvent consulter les offres ouvertes et déposer leurs propositions directement en ligne.
 
 \section{Analyse des besoins}
 
@@ -192,31 +153,18 @@ Administration & Gestion des comptes utilisateurs (création, désactivation, ch
 \subsection{Besoins non-fonctionnels}
 
 \begin{description}
-    \item[Sécurité] Authentification par JWT (token en mémoire, cookie httpOnly),
-    contrôle d'accès basé sur les rôles (RBAC), chiffrement AES-256-GCM des documents
-    sensibles, audit complet, protection contre les injections SQL, HTTPS obligatoire.
+    \item[Sécurité] Authentification par JWT (token en mémoire, cookie httpOnly), contrôle d'accès basé sur les rôles (RBAC), chiffrement AES-256-GCM des documents sensibles, audit complet, protection contre les injections SQL, HTTPS obligatoire.
 
-    \item[Performance] Réponses API inférieures à 500 ms pour les listes paginées.
-    Pagination côté serveur (20 offres par page). Chiffrement uniquement sur les
-    documents marqués sensibles pour ne pas pénaliser les uploads standards.
+    \item[Performance] Réponses API inférieures à 500 ms pour les listes paginées. Pagination côté serveur (20 offres par page). Chiffrement uniquement sur les documents marqués sensibles pour ne pas pénaliser les uploads standards.
 
-    \item[Disponibilité] Redémarrage automatique des conteneurs Docker en cas d'échec
-    (\texttt{restart: unless-stopped}). Vérifications de santé (\textit{health checks})
-    sur chaque service.
+    \item[Disponibilité] Redémarrage automatique des conteneurs Docker en cas d'échec (\texttt{restart: unless-stopped}). Vérifications de santé (\textit{health checks}) sur chaque service.
 
-    \item[Traçabilité] Toute action d'écriture (création, modification, téléchargement,
-    export, connexion) est enregistrée dans le journal d'audit avec l'adresse IP,
-    l'utilisateur et le contenu des modifications.
+    \item[Traçabilité] Toute action d'écriture (création, modification, téléchargement, export, connexion) est enregistrée dans le journal d'audit avec l'adresse IP, l'utilisateur et le contenu des modifications.
 
-    \item[Maintenabilité] Architecture modulaire (8 applications Django indépendantes),
-    pipeline CI automatique (tests + lint à chaque push), structure de projet
-    documentée.
+    \item[Maintenabilité] Architecture modulaire (8 applications Django indépendantes), pipeline CI automatique (tests + lint à chaque push), structure de projet documentée.
 
-    \item[Reproductibilité] Déploiement en une commande (\texttt{docker-compose up}).
-    Variables d'environnement pour tous les secrets, aucune valeur en dur dans le code.
+    \item[Reproductibilité] Déploiement en une commande (\texttt{docker-compose up}). Variables d'environnement pour tous les secrets, aucune valeur en dur dans le code.
 \end{description}
-
-% -------------------------------------------------------------------
 
 \section{Évaluation et justification de la solution}
 
@@ -247,21 +195,13 @@ Excel + partage réseau & Gratuit, familier & Non sécurisé, non traçable, fra
 
 \subsection{Critique de l'existant}
 
-Aucune des solutions commerciales n'est adaptée au contexte de ce stage pour
-trois raisons cumulatives. D'abord, le \textbf{budget nul} interdit les licences SaaS.
-Ensuite, le \textbf{délai d'un mois} exclut tout déploiement et personnalisation
-de produit tiers. Enfin, le besoin d'un \textbf{chiffrement sélectif} des documents
-financiers et d'un portail public isolé dépasse les fonctionnalités standard
-des outils génériques.
+Aucune des solutions commerciales n'est adaptée au contexte de ce stage pour trois raisons cumulatives. D'abord, le budget non alloué aux licences interdit les solutions payantes. Ensuite, le délai d'un mois exclut tout déploiement et personnalisation de produit tiers. Enfin, le besoin d'un chiffrement sélectif des documents financiers et d'un portail public isolé dépasse les fonctionnalités standard des outils génériques.
 
-La solution Excel actuelle, bien que pratique, expose l'entreprise à des risques
-réels : perte de données, accès non contrôlé aux offres financières, impossibilité
-de retrouver l'historique des modifications.
+La solution Excel actuelle, bien que pratique, expose l'entreprise à des risques réels : perte de données, accès non contrôlé aux offres financières, impossibilité de retrouver l'historique des modifications.
 
 \subsection{Justification du développement sur mesure}
 
-Le développement d'une application web sur mesure est la seule option répondant
-simultanément à toutes les contraintes :
+Le développement d'une application web sur mesure est la seule option répondant simultanément à toutes les contraintes :
 
 \begin{itemize}
     \item Workflow exact du processus N+ONE (statuts, rôles, notifications) ;
@@ -271,13 +211,10 @@ simultanément à toutes les contraintes :
     \item Déployable sur l'infrastructure existante de N+ONE.
 \end{itemize}
 
-\paragraph{Estimation des coûts d'infrastructure} En cas de déploiement en production,
-le coût se limiterait à l'infrastructure serveur : environ 50 à 100 \euro/mois
-sur un serveur cloud (ou nul si déployé sur les serveurs internes N+ONE), contre
-plusieurs milliers d'euros annuels pour une licence SAP Ariba.
+\paragraph{Estimation des coûts d'infrastructure} En cas de déploiement en production, le coût se limiterait à l'infrastructure serveur : environ 50 à 100 euros par mois sur un serveur cloud (ou nul si déployé sur les serveurs internes N+ONE), contre plusieurs milliers d'euros annuels pour une licence SAP Ariba.
 
+\section{Conclusion}
 
-}
-\end{spacing}
+Ce chapitre a permis de cadrer le projet dans son contexte organisationnel et technique. La présentation de N+ONE DATACENTERS a mis en évidence les besoins concrets d'une entreprise gérant des appels d'offres à volume croissant. L'analyse des besoins a établi les exigences fonctionnelles et non-fonctionnelles auxquelles la solution doit répondre, tandis que l'étude de l'existant a démontré qu'aucune solution du marché ne satisfait simultanément toutes les contraintes identifiées. Ces éléments justifient pleinement le développement d'une application sur mesure, dont la conception et l'architecture sont détaillées dans le chapitre suivant.
 
 \newpage

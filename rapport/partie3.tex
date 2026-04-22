@@ -3,6 +3,8 @@
 \begin{spacing}{1.25}
 {\large
 
+Ce chapitre décrit la concrétisation des choix de conception présentés au chapitre précédent. Il détaille l'environnement de développement, l'implémentation des modules backend et frontend, les interfaces utilisateur réalisées, ainsi que les résultats des tests de validation. L'objectif est de démontrer que la solution développée répond aux exigences fonctionnelles et non-fonctionnelles identifiées en début de projet.
+
 \section{Environnement de développement}
 
 \subsection{Outils utilisés}
@@ -462,6 +464,10 @@ cycle de vie, 6 candidats et 8 soumissions avec scores. Ce scénario a permis
 de valider le parcours complet :
 création d'offre → publication → soumission portail → évaluation → attribution
 → export PDF → consultation journal d'audit.
+
+\section{Conclusion}
+
+Ce chapitre a présenté la mise en œuvre complète du système, de l'environnement de développement jusqu'à la validation par les tests. L'implémentation backend a démontré la robustesse de la machine à états des offres, la transparence du chiffrement AES-256-GCM et l'isolation effective du portail public. Côté frontend, la gestion sécurisée des tokens JWT et le routage par rôle garantissent une expérience utilisateur cohérente avec les exigences de sécurité. Les tests automatisés et le pipeline CI confirment la fiabilité de l'ensemble, et le script de démonstration valide le parcours complet de bout en bout.
 
 }
 \end{spacing}
