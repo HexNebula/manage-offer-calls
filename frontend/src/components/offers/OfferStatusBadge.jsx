@@ -1,12 +1,24 @@
 import React from 'react';
 import Badge from '../ui/Badge.jsx';
 
-const STATUS_CONFIG = {
-  DRAFT: { label: 'Brouillon', variant: 'gray' },
-  PUBLISHED: { label: 'Publié', variant: 'blue' },
-  EVALUATION: { label: 'Évaluation', variant: 'yellow' },
-  AWARDED: { label: 'Attribué', variant: 'green' },
-  CANCELLED: { label: 'Annulé', variant: 'red' },
+export const STATUS_CONFIG = {
+  DETECTED: { label: 'Détecté', variant: 'gray' },
+  PREPARING: { label: 'En préparation', variant: 'blue' },
+  REVIEW: { label: 'En validation', variant: 'purple' },
+  SUBMITTED: { label: 'Déposé', variant: 'yellow' },
+  WON: { label: 'Gagné', variant: 'green' },
+  LOST: { label: 'Perdu', variant: 'red' },
+  NO_GO: { label: 'No-Go', variant: 'orange' },
+  CANCELLED: { label: 'Annulé', variant: 'gray' },
+};
+
+export const IN_PROGRESS_STATUSES = ['DETECTED', 'PREPARING', 'REVIEW'];
+
+export const CATEGORY_LABELS = {
+  IT_INFRASTRUCTURE: 'Infrastructure IT',
+  SERVICES: 'Services',
+  WORKS: 'Travaux',
+  SUPPLIES: 'Fournitures',
 };
 
 export default function OfferStatusBadge({ status }) {

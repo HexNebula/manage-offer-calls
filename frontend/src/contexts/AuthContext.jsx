@@ -3,7 +3,8 @@ import axios from 'axios';
 
 export const AuthContext = createContext(null);
 
-const BASE_URL = 'http://localhost:8000/api';
+// Same origin as the app: login goes through nginx and its rate limit.
+const BASE_URL = '/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

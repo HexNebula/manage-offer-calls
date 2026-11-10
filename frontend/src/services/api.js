@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/api';
+// Relative URL: every API call goes through nginx (TLS, headers, login rate limit).
+const BASE_URL = '/api';
 
 // We store a reference to the auth context accessor here — set during app init
 let getAccessToken = () => null;

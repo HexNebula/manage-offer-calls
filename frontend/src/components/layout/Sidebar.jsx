@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   FileText,
   Users,
+  Building2,
   Bell,
   BarChart2,
   Shield,
@@ -27,10 +28,10 @@ const navItems = [
     roles: ['ADMIN', 'MANAGER', 'ANALYST', 'VIEWER'],
   },
   {
-    label: 'Candidats',
-    to: '/candidates',
-    icon: Users,
-    roles: ['ADMIN', 'MANAGER', 'ANALYST'],
+    label: 'Acheteurs',
+    to: '/buyers',
+    icon: Building2,
+    roles: ['ADMIN', 'MANAGER', 'ANALYST', 'VIEWER'],
   },
   {
     label: 'Notifications',

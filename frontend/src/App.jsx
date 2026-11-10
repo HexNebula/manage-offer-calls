@@ -7,13 +7,11 @@ import Spinner from './components/ui/Spinner.jsx';
 
 // Pages
 import Login from './pages/Login.jsx';
-import PortalOfferList from './pages/portal/PortalOfferList.jsx';
-import PortalOfferSubmit from './pages/portal/PortalOfferSubmit.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import OfferList from './pages/offers/OfferList.jsx';
 import OfferDetail from './pages/offers/OfferDetail.jsx';
 import OfferFormPage from './pages/offers/OfferForm.jsx';
-import CandidateList from './pages/candidates/CandidateList.jsx';
+import BuyerList from './pages/buyers/BuyerList.jsx';
 import NotificationList from './pages/notifications/NotificationList.jsx';
 import Reports from './pages/reports/Reports.jsx';
 import UserList from './pages/admin/UserList.jsx';
@@ -85,10 +83,6 @@ export default function App() {
     <BrowserRouter>
       <ApiConfigurator>
         <Routes>
-          {/* Public portal — no auth required */}
-          <Route path="/portal" element={<PortalOfferList />} />
-          <Route path="/portal/:id" element={<PortalOfferSubmit />} />
-
           {/* Public */}
           <Route
             path="/login"
@@ -112,7 +106,7 @@ export default function App() {
             <Route path="offers/new" element={<OfferFormPage />} />
             <Route path="offers/:id" element={<OfferDetail />} />
             <Route path="offers/:id/edit" element={<OfferFormPage />} />
-            <Route path="candidates" element={<CandidateList />} />
+            <Route path="buyers" element={<BuyerList />} />
             <Route path="notifications" element={<NotificationList />} />
             <Route path="reports" element={<Reports />} />
 

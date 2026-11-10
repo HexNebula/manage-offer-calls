@@ -22,8 +22,4 @@ export const documentsService = {
   getOfferDocuments(offerId) {
     return api.get('/documents/', { params: { offer_call: offerId } }).then((r) => r.data);
   },
-
-  getSubmissionDocuments(submissionId) {
-    return api.get('/documents/', { params: { submission: submissionId } }).then((r) => r.data);
-  },
 };

@@ -9,23 +9,16 @@ import Button from '../../components/ui/Button.jsx';
 import Select from '../../components/ui/Select.jsx';
 import Input from '../../components/ui/Input.jsx';
 import Table from '../../components/ui/Table.jsx';
-import OfferStatusBadge from '../../components/offers/OfferStatusBadge.jsx';
+import OfferStatusBadge, { STATUS_CONFIG, CATEGORY_LABELS } from '../../components/offers/OfferStatusBadge.jsx';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
-  { value: 'DRAFT', label: 'Brouillon' },
-  { value: 'PUBLISHED', label: 'Publié' },
-  { value: 'EVALUATION', label: 'Évaluation' },
-  { value: 'AWARDED', label: 'Attribué' },
-  { value: 'CANCELLED', label: 'Annulé' },
+  ...Object.entries(STATUS_CONFIG).map(([value, { label }]) => ({ value, label })),
 ];
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'Toutes les catégories' },
-  { value: 'IT_INFRASTRUCTURE', label: 'Infrastructure IT' },
-  { value: 'SERVICES', label: 'Services' },
-  { value: 'WORKS', label: 'Travaux' },
-  { value: 'SUPPLIES', label: 'Fournitures' },
+  ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
 ];
 
 function formatDate(dateStr) {
@@ -90,14 +83,22 @@ export default function OfferList() {
     },
     {
       key: 'title',
-      label: 'Titre',
-      render: (val) => (
-        <span className="font-medium text-gray-900">{val}</span>
+      label: 'Objet',
+      render: (val, row) => (
+        <div>
+          <p className="font-medium text-gray-900">{val}</p>
+          {row.buyer_reference && <p className="text-xs text-gray-500">{row.buyer_reference}</p>}
+        </div>
       ),
+    },
+    {
+      key: 'buyer_name',
+      label: 'Acheteur',
     },
     {
       key: 'category',
       label: 'Catégorie',
+      render: (val) => CATEGORY_LABELS[val] || val,
     },
     {
       key: 'status',
@@ -106,14 +107,13 @@ export default function OfferList() {
     },
     {
       key: 'submission_deadline',
-      label: 'Date limite',
+      label: 'Remise des plis',
       render: (val) => formatDate(val),
     },
     {
       key: 'assigned_to',
       label: 'Assigné à',
-      render: (val, row) =>
-        row.assigned_to_name || row.assigned_to || '—',
+      render: (val, row) => row.assigned_to_name || '—',
     },
   ];
 
@@ -146,7 +146,7 @@ export default function OfferList() {
               />
               <input
                 type="search"
-                placeholder="Rechercher par titre..."
+                placeholder="Rechercher par objet..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="block w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"

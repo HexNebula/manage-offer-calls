@@ -1,38 +1,28 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import {
-  FileText,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Bell,
-  CalendarClock,
-} from 'lucide-react';
+import { FileText, Send, Trophy, XCircle, Percent, Bell, CalendarClock } from 'lucide-react';
 import { offersService } from '../services/offers.js';
 import { notificationsService } from '../services/notifications.js';
 import Card, { CardHeader, CardTitle } from '../components/ui/Card.jsx';
 import Spinner from '../components/ui/Spinner.jsx';
-import OfferStatusBadge from '../components/offers/OfferStatusBadge.jsx';
+import OfferStatusBadge, { IN_PROGRESS_STATUSES } from '../components/offers/OfferStatusBadge.jsx';
 
-const STATUSES = ['DRAFT', 'PUBLISHED', 'EVALUATION', 'AWARDED', 'CANCELLED'];
-
-const STATUS_ICONS = {
-  DRAFT: { icon: FileText, color: 'text-gray-500', bg: 'bg-gray-100' },
-  PUBLISHED: { icon: AlertCircle, color: 'text-blue-600', bg: 'bg-blue-100' },
-  EVALUATION: { icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-100' },
-  AWARDED: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-100' },
-  CANCELLED: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-100' },
-};
-
-const STATUS_LABELS = {
-  DRAFT: 'Brouillons',
-  PUBLISHED: 'Publiés',
-  EVALUATION: 'En évaluation',
-  AWARDED: 'Attribués',
-  CANCELLED: 'Annulés',
-};
+function KpiCard({ icon: Icon, color, bg, value, label, onClick }) {
+  return (
+    <Card className={onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} onClick={onClick}>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
+          <Icon size={20} className={color} />
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-xs text-gray-500">{label}</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
@@ -56,7 +46,7 @@ export default function Dashboard() {
 
   const { data: allOffersData, isLoading: loadingOffers } = useQuery({
     queryKey: ['offers', 'all'],
-    queryFn: () => offersService.getOffers({ page_size: 100 }),
+    queryFn: () => offersService.getOffers({ page_size: 500 }),
   });
 
   const { data: unreadData } = useQuery({
@@ -67,20 +57,19 @@ export default function Dashboard() {
 
   const offers = allOffersData?.results || [];
 
-  // Status counts
-  const statusCounts = STATUSES.reduce((acc, s) => {
-    acc[s] = offers.filter((o) => o.status === s).length;
-    return acc;
-  }, {});
+  const count = (status) => offers.filter((o) => o.status === status).length;
+  const won = count('WON');
+  const lost = count('LOST');
+  const winRate = won + lost > 0 ? `${Math.round((100 * won) / (won + lost))} %` : '—';
 
   // Recent 5 offers
   const recentOffers = [...offers]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5);
 
-  // Upcoming deadlines (next 7 days)
+  // Submission deadlines in the next 7 days, only for tenders still being prepared
   const upcomingDeadlines = offers
-    .filter((o) => isDeadlineNear(o.submission_deadline))
+    .filter((o) => IN_PROGRESS_STATUSES.includes(o.status) && isDeadlineNear(o.submission_deadline))
     .sort((a, b) => new Date(a.submission_deadline) - new Date(b.submission_deadline));
 
   if (loadingOffers) {
@@ -96,46 +85,32 @@ export default function Dashboard() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Vue d'ensemble des appels d'offres
+          Appels d'offres suivis et réponses de N+ONE
         </p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Total */}
-        <Card className="col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <FileText size={20} className="text-indigo-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{offers.length}</p>
-              <p className="text-xs text-gray-500">Total</p>
-            </div>
-          </div>
-        </Card>
-
-        {STATUSES.map((status) => {
-          const cfg = STATUS_ICONS[status];
-          const Icon = cfg.icon;
-          return (
-            <Card
-              key={status}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate(`/offers?status=${status}`)}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
-                  <Icon size={20} className={cfg.color} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{statusCounts[status]}</p>
-                  <p className="text-xs text-gray-500">{STATUS_LABELS[status]}</p>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
+        <KpiCard
+          icon={FileText} color="text-blue-600" bg="bg-blue-100"
+          value={offers.filter((o) => IN_PROGRESS_STATUSES.includes(o.status)).length}
+          label="En cours (détecté → validation)"
+          onClick={() => navigate('/offers?status=PREPARING')}
+        />
+        <KpiCard
+          icon={Send} color="text-yellow-600" bg="bg-yellow-100"
+          value={count('SUBMITTED')} label="Déposés, en attente"
+          onClick={() => navigate('/offers?status=SUBMITTED')}
+        />
+        <KpiCard
+          icon={Trophy} color="text-green-600" bg="bg-green-100"
+          value={won} label="Gagnés" onClick={() => navigate('/offers?status=WON')}
+        />
+        <KpiCard
+          icon={XCircle} color="text-red-500" bg="bg-red-100"
+          value={lost} label="Perdus" onClick={() => navigate('/offers?status=LOST')}
+        />
+        <KpiCard icon={Percent} color="text-indigo-600" bg="bg-indigo-100" value={winRate} label="Taux de succès" />
       </div>
 
       {/* Notifications + Deadlines row */}
@@ -151,7 +126,7 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {unreadData?.count ?? 0}
+                {unreadData?.unread_count ?? 0}
               </p>
               <p className="text-xs text-gray-500">Notifications non lues</p>
             </div>
@@ -163,7 +138,7 @@ export default function Dashboard() {
           <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
             <CalendarClock size={18} className="text-orange-500" />
             <h2 className="text-sm font-semibold text-gray-900">
-              Échéances dans les 7 prochains jours
+              Remises des plis dans les 7 prochains jours
             </h2>
           </div>
           {upcomingDeadlines.length === 0 ? (
@@ -182,7 +157,7 @@ export default function Dashboard() {
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{offer.title}</p>
-                      <p className="text-xs text-gray-500">{offer.reference_number}</p>
+                      <p className="text-xs text-gray-500">{offer.buyer_name} · {offer.reference_number}</p>
                     </div>
                     <div className="ml-4 flex-shrink-0 text-right">
                       <p className="text-sm font-semibold text-orange-600">
@@ -201,7 +176,7 @@ export default function Dashboard() {
       {/* Recent offers table */}
       <Card padding={false}>
         <CardHeader className="px-5 pt-5">
-          <CardTitle>Offres récentes</CardTitle>
+          <CardTitle>Appels d'offres récents</CardTitle>
           <button
             onClick={() => navigate('/offers')}
             className="text-sm text-indigo-600 hover:underline font-medium"
@@ -213,7 +188,7 @@ export default function Dashboard() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Référence', 'Titre', 'Catégorie', 'Statut', 'Échéance'].map((h) => (
+                {['Référence', 'Objet', 'Acheteur', 'Statut', 'Remise des plis'].map((h) => (
                   <th
                     key={h}
                     className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -244,7 +219,7 @@ export default function Dashboard() {
                       {offer.title}
                     </td>
                     <td className="px-5 py-3 text-sm text-gray-600">
-                      {offer.category}
+                      {offer.buyer_name}
                     </td>
                     <td className="px-5 py-3">
                       <OfferStatusBadge status={offer.status} />

@@ -1,8 +1,9 @@
 import React from 'react';
 
-export default function Card({ children, className = '', padding = true }) {
+export default function Card({ children, className = '', padding = true, ...props }) {
   return (
     <div
+      {...props}
       className={[
         'bg-white rounded-lg shadow-sm border border-gray-200',
         padding ? 'p-6' : '',

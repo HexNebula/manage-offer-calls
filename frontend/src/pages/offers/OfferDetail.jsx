@@ -1,20 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
-import {
-  ArrowLeft,
-  Edit,
-  Upload,
-  Download,
-  Trash2,
-  Plus,
-  FileText,
-  AlertTriangle,
-} from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, Edit, Upload, Download, Trash2, FileText, Lock, ExternalLink } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { offersService } from '../../services/offers.js';
 import { documentsService } from '../../services/documents.js';
@@ -24,49 +11,194 @@ import Button from '../../components/ui/Button.jsx';
 import Badge from '../../components/ui/Badge.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Modal from '../../components/ui/Modal.jsx';
-import OfferStatusBadge from '../../components/offers/OfferStatusBadge.jsx';
 import Input from '../../components/ui/Input.jsx';
+import Select from '../../components/ui/Select.jsx';
+import OfferStatusBadge, { CATEGORY_LABELS } from '../../components/offers/OfferStatusBadge.jsx';
+
+// Mirrors OfferCall.VALID_TRANSITIONS on the backend, which stays the source of truth.
+// `form`: null = one click, 'reason' = asks why, 'result' = asks for the buyer's result.
+const ACTIONS = {
+  DETECTED: [
+    { to: 'PREPARING', label: 'Go : préparer la réponse', variant: 'success' },
+    { to: 'NO_GO', label: 'No-Go', variant: 'secondary', form: 'reason', required: true },
+  ],
+  PREPARING: [{ to: 'REVIEW', label: 'Envoyer en validation', variant: 'primary' }],
+  REVIEW: [
+    { to: 'PREPARING', label: 'Renvoyer en préparation', variant: 'secondary' },
+    { to: 'SUBMITTED', label: 'Marquer comme déposée', variant: 'warning' },
+  ],
+  SUBMITTED: [
+    { to: 'WON', label: 'Gagné', variant: 'success', form: 'result' },
+    { to: 'LOST', label: 'Perdu', variant: 'danger', form: 'result', required: true },
+  ],
+};
+const CANCELLABLE = ['DETECTED', 'PREPARING', 'REVIEW', 'SUBMITTED'];
+const FINAL = ['WON', 'LOST', 'NO_GO', 'CANCELLED'];
+
+const DOC_CATEGORIES = {
+  DAO: { label: "Dossier d'AO (acheteur)", variant: 'gray' },
+  ADMINISTRATIVE: { label: 'Administratif', variant: 'blue' },
+  TECHNICAL: { label: 'Technique', variant: 'purple' },
+  FINANCIAL: { label: 'Financier', variant: 'orange' },
+};
 
 function formatDateTime(dateStr) {
   if (!dateStr) return '—';
   return new Date(dateStr).toLocaleString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 }
 
 function formatCurrency(value) {
-  if (value == null) return '—';
-  return new Intl.NumberFormat('fr-MA', {
-    style: 'currency',
-    currency: 'MAD',
-  }).format(value);
+  if (value == null || value === '') return '—';
+  return new Intl.NumberFormat('fr-MA', { style: 'currency', currency: 'MAD' }).format(value);
 }
 
-function SubmissionRow({ submission, offerId }) {
+function apiError(err) {
+  const data = err?.response?.data;
+  if (!data) return err ? 'Une erreur est survenue.' : null;
+  return data.error || data.detail || Object.values(data).flat().join(' ');
+}
+
+function Field({ label, children, wide = false }) {
   return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-5 py-3 text-sm text-gray-900">
-        {submission.candidate_name || submission.candidate || '—'}
-      </td>
-      <td className="px-5 py-3 text-sm text-gray-600">
-        {formatDateTime(submission.submitted_at)}
-      </td>
-      <td className="px-5 py-3 text-sm text-gray-700">
-        {submission.technical_score ?? '—'}
-      </td>
-      <td className="px-5 py-3 text-sm text-gray-700">
-        {submission.financial_score ?? '—'}
-      </td>
-      <td className="px-5 py-3">
-        <Badge variant={submission.status === 'ACCEPTED' ? 'green' : submission.status === 'REJECTED' ? 'red' : 'gray'}>
-          {submission.status || '—'}
-        </Badge>
-      </td>
-    </tr>
+    <div className={wide ? 'sm:col-span-2 lg:col-span-3' : ''}>
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
+      <div className="mt-1 text-sm text-gray-900">{children || '—'}</div>
+    </div>
+  );
+}
+
+function TransitionModal({ offer, action, onClose }) {
+  const queryClient = useQueryClient();
+  const { register, handleSubmit } = useForm();
+  const mutation = useMutation({
+    mutationFn: (data) => offersService.transition(offer.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['offer', offer.id] });
+      queryClient.invalidateQueries({ queryKey: ['offers'] });
+      onClose();
+    },
+  });
+
+  const submit = (data) => {
+    const payload = { status: action.to };
+    Object.entries(data).forEach(([k, v]) => { if (v !== '') payload[k] = v; });
+    mutation.mutate(payload);
+  };
+
+  return (
+    <Modal isOpen onClose={onClose} title={action.label}>
+      <form onSubmit={handleSubmit(submit)} className="space-y-4">
+        {mutation.error && (
+          <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+            {apiError(mutation.error)}
+          </div>
+        )}
+        {action.form === 'result' && (
+          <>
+            <Input label="Attributaire" placeholder="Nom de la société retenue" {...register('winner_name')} />
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Montant retenu (MAD)" type="number" min="0" step="0.01" {...register('winning_amount')} />
+              <Input label="Rang de N+ONE" type="number" min="1" {...register('our_rank')} />
+            </div>
+          </>
+        )}
+        {action.form && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Motif {action.required && <span className="text-red-500">*</span>}
+            </label>
+            <textarea
+              rows={3}
+              required={action.required}
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              {...register('outcome_reason')}
+            />
+          </div>
+        )}
+        {!action.form && (
+          <p className="text-sm text-gray-600">
+            Confirmer le passage de <strong>{offer.reference_number}</strong> au statut suivant ?
+          </p>
+        )}
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="secondary" type="button" onClick={onClose}>Annuler</Button>
+          <Button type="submit" variant={action.variant} isLoading={mutation.isPending}>Confirmer</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function UploadModal({ offerId, canSeeFinancial, onClose }) {
+  const queryClient = useQueryClient();
+  const { register, handleSubmit, watch } = useForm({ defaultValues: { category: 'TECHNICAL' } });
+  const category = watch('category');
+  const mutation = useMutation({
+    mutationFn: documentsService.uploadDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['offer-documents', offerId] });
+      onClose();
+    },
+  });
+
+  const categoryOptions = Object.entries(DOC_CATEGORIES)
+    .filter(([value]) => value !== 'FINANCIAL' || canSeeFinancial)
+    .map(([value, { label }]) => ({ value, label }));
+
+  const submit = (data) => {
+    const formData = new FormData();
+    formData.append('file', data.file[0]);
+    formData.append('offer_call', offerId);
+    formData.append('category', data.category);
+    formData.append('is_sensitive', data.is_sensitive ? 'true' : 'false');
+    if (data.expires_at) formData.append('expires_at', data.expires_at);
+    mutation.mutate(formData);
+  };
+
+  return (
+    <Modal isOpen onClose={onClose} title="Ajouter une pièce">
+      <form onSubmit={handleSubmit(submit)} className="space-y-4">
+        {mutation.error && (
+          <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+            {apiError(mutation.error)}
+          </div>
+        )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Fichier (PDF, DOCX, XLSX) <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.docx,.xlsx"
+            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-brand-navy hover:file:bg-orange-100"
+            {...register('file', { required: true })}
+          />
+        </div>
+        <Select label="Catégorie" options={categoryOptions} {...register('category')} />
+        <Input
+          label="Date d'expiration"
+          type="date"
+          helperText="Pour les attestations (fiscale, CNSS...) : une alerte est envoyée 15 jours avant."
+          {...register('expires_at')}
+        />
+        {category === 'FINANCIAL' ? (
+          <p className="flex items-center gap-2 text-sm text-orange-600">
+            <Lock size={14} /> Les pièces financières sont toujours chiffrées (AES-256-GCM).
+          </p>
+        ) : (
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input type="checkbox" className="rounded border-gray-300" {...register('is_sensitive')} />
+            Chiffrer ce document (données personnelles : CV, CIN...)
+          </label>
+        )}
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="secondary" type="button" onClick={onClose}>Annuler</Button>
+          <Button type="submit" isLoading={mutation.isPending}>Téléverser</Button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -75,99 +207,26 @@ export default function OfferDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-
-  const [activeTab, setActiveTab] = useState('submissions');
-  const [addSubmissionOpen, setAddSubmissionOpen] = useState(false);
-  const [uploadDocOpen, setUploadDocOpen] = useState(false);
-  const [scoreModalOpen, setScoreModalOpen] = useState(false);
-  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [action, setAction] = useState(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const { data: offer, isLoading } = useQuery({
     queryKey: ['offer', id],
     queryFn: () => offersService.getOffer(id),
   });
 
-  const { data: submissions, isLoading: loadingSubmissions } = useQuery({
-    queryKey: ['submissions', id],
-    queryFn: () => offersService.getSubmissions(id),
-    enabled: activeTab === 'submissions',
-  });
+  const isManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+  const canUpload = isManager || user?.role === 'ANALYST';
 
   const { data: documents, isLoading: loadingDocuments } = useQuery({
     queryKey: ['offer-documents', id],
     queryFn: () => documentsService.getOfferDocuments(id),
-    enabled: activeTab === 'documents',
-  });
-
-  const publishMutation = useMutation({
-    mutationFn: () => offersService.publishOffer(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['offer', id] }),
-  });
-
-  const closeMutation = useMutation({
-    mutationFn: () => offersService.closeOffer(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['offer', id] }),
+    enabled: canUpload, // the documents API is ANALYST and above
   });
 
   const deleteDocMutation = useMutation({
-    mutationFn: (docId) => documentsService.deleteDocument(docId),
+    mutationFn: documentsService.deleteDocument,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['offer-documents', id] }),
-  });
-
-  // Add submission form
-  const {
-    register: regSub,
-    handleSubmit: handleSub,
-    reset: resetSub,
-    formState: { errors: subErrors, isSubmitting: submittingAdd },
-  } = useForm();
-
-  const createSubmissionMutation = useMutation({
-    mutationFn: (data) => offersService.createSubmission(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['submissions', id] });
-      setAddSubmissionOpen(false);
-      resetSub();
-    },
-  });
-
-  // Score form
-  const {
-    register: regScore,
-    handleSubmit: handleScore,
-    reset: resetScore,
-    formState: { isSubmitting: submittingScore },
-  } = useForm();
-
-  const awardMutation = useMutation({
-    mutationFn: () => offersService.awardOffer(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['offer', id] }),
-  });
-
-  const scoreMutation = useMutation({
-    mutationFn: ({ subId, data }) => offersService.scoreSubmission(id, subId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['submissions', id] });
-      setScoreModalOpen(false);
-      resetScore();
-    },
-  });
-
-  // Upload document form
-  const {
-    register: regUpload,
-    handleSubmit: handleUpload,
-    reset: resetUpload,
-    formState: { isSubmitting: submittingUpload },
-  } = useForm();
-
-  const uploadMutation = useMutation({
-    mutationFn: (formData) => documentsService.uploadDocument(formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offer-documents', id] });
-      setUploadDocOpen(false);
-      resetUpload();
-    },
   });
 
   const handleDownload = async (doc) => {
@@ -176,12 +235,12 @@ export default function OfferDetail() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = doc.file_name || doc.name || `document-${doc.id}`;
+      a.download = doc.file_name;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (err) {
+    } catch {
       alert('Échec du téléchargement. Veuillez réessayer.');
     }
   };
@@ -193,33 +252,27 @@ export default function OfferDetail() {
       </div>
     );
   }
-
   if (!offer) {
-    return (
-      <div className="text-center py-16 text-gray-500">Offre introuvable.</div>
-    );
+    return <div className="text-center py-16 text-gray-500">Appel d'offres introuvable.</div>;
   }
 
-  const isAdmin = user?.role === 'ADMIN';
-  const isManager = user?.role === 'MANAGER';
-  const canEdit =
-    (isAdmin || isManager) &&
-    (offer.assigned_to?.id === user?.id || isAdmin) &&
-    offer.status !== 'AWARDED' &&
-    offer.status !== 'CANCELLED';
-
-  const submissionsList = Array.isArray(submissions)
-    ? submissions
-    : submissions?.results || [];
-
-  const documentsList = Array.isArray(documents)
-    ? documents
-    : documents?.results || [];
+  const isFinal = FINAL.includes(offer.status);
+  const actions = isManager
+    ? [
+        ...(ACTIONS[offer.status] || []),
+        ...(CANCELLABLE.includes(offer.status)
+          ? [{ to: 'CANCELLED', label: 'Annulé / infructueux', variant: 'ghost', form: 'reason' }]
+          : []),
+      ]
+    : [];
+  const documentsList = Array.isArray(documents) ? documents : documents?.results || [];
+  // The API removes bid_amount for users who may not see it.
+  const bidHidden = !('bid_amount' in offer);
 
   return (
     <div className="space-y-5">
-      {/* Back + Header */}
-      <div className="flex items-start justify-between gap-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-start gap-3">
           <button
             onClick={() => navigate('/offers')}
@@ -232,394 +285,142 @@ export default function OfferDetail() {
               <h1 className="text-2xl font-bold text-gray-900">{offer.title}</h1>
               <OfferStatusBadge status={offer.status} />
             </div>
-            <p className="text-sm text-gray-500 font-mono mt-1">{offer.reference_number}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              <span className="font-medium text-gray-700">{offer.buyer_name}</span>
+              {offer.buyer_reference && <> · {offer.buyer_reference}</>}
+              <span className="font-mono"> · {offer.reference_number}</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {canEdit && (
-            <Button
-              variant="secondary"
-              onClick={() => navigate(`/offers/${id}/edit`)}
-            >
+        <div className="flex items-center gap-2 flex-wrap">
+          {isManager && !isFinal && (
+            <Button variant="secondary" onClick={() => navigate(`/offers/${id}/edit`)}>
               <Edit size={16} />
               Modifier
             </Button>
           )}
-          {offer.status === 'DRAFT' && (isAdmin || isManager) && (
-            <Button
-              variant="primary"
-              isLoading={publishMutation.isPending}
-              onClick={() => publishMutation.mutate()}
-            >
-              Publier
+          {actions.map((a) => (
+            <Button key={a.to} variant={a.variant} onClick={() => setAction(a)}>
+              {a.label}
             </Button>
-          )}
-          {offer.status === 'PUBLISHED' && (isAdmin || isManager) && (
-            <Button
-              variant="warning"
-              isLoading={closeMutation.isPending}
-              onClick={() => closeMutation.mutate()}
-            >
-              Fermer pour évaluation
-            </Button>
-          )}
-          {offer.status === 'EVALUATION' && (isAdmin || isManager) && (
-            <Button
-              variant="success"
-              isLoading={awardMutation.isPending}
-              onClick={() => awardMutation.mutate()}
-            >
-              Attribuer
-            </Button>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* Info card */}
+      {/* Tender, as published by the buyer */}
       <Card>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Catégorie</p>
-            <p className="mt-1 text-sm text-gray-900">{offer.category || '—'}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Budget estimatif</p>
-            <p className="mt-1 text-sm text-gray-900">{formatCurrency(offer.budget_estimate)}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Assigné à</p>
-            <p className="mt-1 text-sm text-gray-900">{offer.assigned_to_name || '—'}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Date limite soumission</p>
-            <p className="mt-1 text-sm text-gray-900">{formatDateTime(offer.submission_deadline)}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Date limite évaluation</p>
-            <p className="mt-1 text-sm text-gray-900">{formatDateTime(offer.evaluation_deadline)}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Créé le</p>
-            <p className="mt-1 text-sm text-gray-900">{formatDateTime(offer.created_at)}</p>
-          </div>
-          {offer.description && (
-            <div className="sm:col-span-2 lg:col-span-3">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Description</p>
-              <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{offer.description}</p>
-            </div>
-          )}
+          <Field label="Catégorie">{CATEGORY_LABELS[offer.category]}</Field>
+          <Field label="Estimation de l'acheteur">{formatCurrency(offer.budget_estimate)}</Field>
+          <Field label="Caution provisoire">{formatCurrency(offer.provisional_guarantee)}</Field>
+          <Field label="Remise des plis">{formatDateTime(offer.submission_deadline)}</Field>
+          <Field label="Ouverture des plis">{formatDateTime(offer.opening_date)}</Field>
+          <Field label="Visite des lieux">{formatDateTime(offer.site_visit_date)}</Field>
+          <Field label="Responsable">{offer.assigned_to?.full_name}</Field>
+          <Field label="Annonce">
+            {offer.source_url && (
+              <a href={offer.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-brand-navy hover:underline">
+                Voir l'annonce <ExternalLink size={12} />
+              </a>
+            )}
+          </Field>
+          <Field label="Créé le">{formatDateTime(offer.created_at)}</Field>
+          <Field label="Description" wide>
+            <p className="text-gray-700 whitespace-pre-wrap">{offer.description}</p>
+          </Field>
         </div>
       </Card>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-6" aria-label="Onglets">
-          {['submissions', 'documents'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={[
-                'py-3 px-1 text-sm font-medium border-b-2 transition-colors',
-                activeTab === tab
-                  ? 'border-brand-orange text-brand-navy'
-                  : 'border-transparent text-gray-500 hover:text-gray-700',
-              ].join(' ')}
-            >
-              {tab === 'submissions' ? 'Soumissions' : 'Documents'}
-              {tab === 'submissions' && submissionsList.length > 0 && (
-                <span className="ml-2 bg-gray-100 text-gray-600 text-xs rounded-full px-2 py-0.5">
-                  {submissionsList.length}
-                </span>
-              )}
-              {tab === 'documents' && documentsList.length > 0 && (
-                <span className="ml-2 bg-gray-100 text-gray-600 text-xs rounded-full px-2 py-0.5">
-                  {documentsList.length}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
+      {/* N+ONE's bid and the result */}
+      <Card>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">Offre N+ONE et résultat</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Field label="Montant de l'offre (HT)">
+            {bidHidden ? (
+              <span className="inline-flex items-center gap-1 text-gray-500"><Lock size={12} /> Réservé aux managers</span>
+            ) : formatCurrency(offer.bid_amount)}
+          </Field>
+          <Field label="Déposée le">{formatDateTime(offer.submitted_at)}</Field>
+          <Field label="Rang de N+ONE">{offer.our_rank}</Field>
+          <Field label="Attributaire">{offer.winner_name}</Field>
+          <Field label="Montant retenu">{formatCurrency(offer.winning_amount)}</Field>
+          <Field label="Motif" wide>{offer.outcome_reason}</Field>
+        </div>
+      </Card>
 
-      {/* Submissions tab */}
-      {activeTab === 'submissions' && (
+      {/* Documents */}
+      {canUpload && (
         <Card padding={false}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-900">Soumissions des candidats</h2>
-            {(isAdmin || isManager) && offer.status !== 'DRAFT' && (
-              <Button size="sm" onClick={() => setAddSubmissionOpen(true)}>
-                <Plus size={14} />
-                Ajouter
-              </Button>
-            )}
-          </div>
-          {loadingSubmissions ? (
-            <div className="flex justify-center py-12">
-              <Spinner className="text-brand-navy" />
-            </div>
-          ) : submissionsList.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-12">
-              Aucune soumission pour le moment.
-            </p>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {['Candidat', 'Soumis le', 'Score technique', 'Score financier', 'Statut', 'Actions'].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {submissionsList.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-gray-50">
-                    <td className="px-5 py-3 text-sm text-gray-900">
-                      {sub.candidate_name || sub.candidate || '—'}
-                    </td>
-                    <td className="px-5 py-3 text-sm text-gray-600">
-                      {formatDateTime(sub.submitted_at)}
-                    </td>
-                    <td className="px-5 py-3 text-sm text-gray-700">
-                      {sub.technical_score ?? '—'}
-                    </td>
-                    <td className="px-5 py-3 text-sm text-gray-700">
-                      {sub.financial_score ?? '—'}
-                    </td>
-                    <td className="px-5 py-3">
-                      <Badge
-                        variant={
-                          sub.status === 'ACCEPTED'
-                            ? 'green'
-                            : sub.status === 'REJECTED'
-                            ? 'red'
-                            : 'gray'
-                        }
-                      >
-                        {sub.status || 'PENDING'}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3">
-                      {(isAdmin || isManager || user?.role === 'ANALYST') && (
-                        <button
-                          onClick={() => {
-                            setSelectedSubmission(sub);
-                            setScoreModalOpen(true);
-                          }}
-                          className="text-xs text-brand-navy hover:underline"
-                        >
-                          Scorer
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </Card>
-      )}
-
-      {/* Documents tab */}
-      {activeTab === 'documents' && (
-        <Card padding={false}>
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-900">Documents de l'appel d'offres</h2>
-            {(isAdmin || isManager) && (
-              <Button size="sm" onClick={() => setUploadDocOpen(true)}>
+            <h2 className="text-sm font-semibold text-gray-900">Pièces du dossier</h2>
+            {!isFinal && (
+              <Button size="sm" onClick={() => setUploadOpen(true)}>
                 <Upload size={14} />
-                Téléverser
+                Ajouter une pièce
               </Button>
             )}
           </div>
           {loadingDocuments ? (
-            <div className="flex justify-center py-12">
-              <Spinner className="text-brand-navy" />
-            </div>
+            <div className="flex justify-center py-12"><Spinner className="text-brand-navy" /></div>
           ) : documentsList.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-12">
-              Aucun document pour le moment.
-            </p>
+            <p className="text-sm text-gray-500 text-center py-12">Aucune pièce pour le moment.</p>
           ) : (
             <ul className="divide-y divide-gray-100">
-              {documentsList.map((doc) => (
-                <li key={doc.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText size={18} className="text-gray-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {doc.file_name || doc.name || `Document #${doc.id}`}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {doc.is_encrypted && (
-                          <span className="inline-flex items-center gap-1 text-orange-500">
-                            <AlertTriangle size={11} />
-                            Chiffré (AES-256)
-                          </span>
-                        )}
-                      </p>
+              {documentsList.map((doc) => {
+                const cat = DOC_CATEGORIES[doc.category] || { label: doc.category, variant: 'gray' };
+                const expired = doc.expires_at && new Date(doc.expires_at) < new Date();
+                return (
+                  <li key={doc.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <FileText size={18} className="text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{doc.file_name}</p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <Badge variant={cat.variant}>{cat.label}</Badge>
+                          {doc.is_encrypted && (
+                            <span className="inline-flex items-center gap-1 text-xs text-orange-600">
+                              <Lock size={11} /> Chiffré (AES-256)
+                            </span>
+                          )}
+                          {doc.expires_at && (
+                            <span className={`text-xs ${expired ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                              {expired ? 'Expiré le' : 'Expire le'} {new Date(doc.expires_at).toLocaleDateString('fr-FR')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                    <button
-                      onClick={() => handleDownload(doc)}
-                      className="p-1.5 rounded text-gray-400 hover:text-brand-navy hover:bg-orange-50 transition-colors"
-                      title="Télécharger"
-                    >
-                      <Download size={16} />
-                    </button>
-                    {(isAdmin || isManager) && (
+                    <div className="flex items-center gap-2 ml-4 flex-shrink-0">
                       <button
-                        onClick={() => deleteDocMutation.mutate(doc.id)}
-                        className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        title="Supprimer"
+                        onClick={() => handleDownload(doc)}
+                        className="p-1.5 rounded text-gray-400 hover:text-brand-navy hover:bg-orange-50 transition-colors"
+                        title="Télécharger"
                       >
-                        <Trash2 size={16} />
+                        <Download size={16} />
                       </button>
-                    )}
-                  </div>
-                </li>
-              ))}
+                      {isManager && (
+                        <button
+                          onClick={() => deleteDocMutation.mutate(doc.id)}
+                          className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          title="Supprimer"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Card>
       )}
 
-      {/* Add Submission Modal */}
-      <Modal
-        isOpen={addSubmissionOpen}
-        onClose={() => setAddSubmissionOpen(false)}
-        title="Ajouter une soumission"
-      >
-        <form
-          onSubmit={handleSub((data) => createSubmissionMutation.mutate(data))}
-          className="space-y-4"
-        >
-          <Input
-            label="Nom du candidat / Entreprise"
-            required
-            error={subErrors.candidate_name?.message}
-            {...regSub('candidate_name', { required: 'Requis' })}
-          />
-          <Input
-            label="Date de soumission"
-            type="datetime-local"
-            {...regSub('submitted_at')}
-          />
-          <Input
-            label="Score technique"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            {...regSub('technical_score')}
-          />
-          <Input
-            label="Score financier"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            {...regSub('financial_score')}
-          />
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setAddSubmissionOpen(false)} type="button">
-              Annuler
-            </Button>
-            <Button type="submit" isLoading={submittingAdd || createSubmissionMutation.isPending}>
-              Ajouter
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Score Modal */}
-      <Modal
-        isOpen={scoreModalOpen}
-        onClose={() => setScoreModalOpen(false)}
-        title="Évaluer la soumission"
-      >
-        <form
-          onSubmit={handleScore((data) =>
-            scoreMutation.mutate({ subId: selectedSubmission?.id, data })
-          )}
-          className="space-y-4"
-        >
-          <Input
-            label="Score technique (0–100)"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            defaultValue={selectedSubmission?.technical_score}
-            {...regScore('technical_score')}
-          />
-          <Input
-            label="Score financier (0–100)"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            defaultValue={selectedSubmission?.financial_score}
-            {...regScore('financial_score')}
-          />
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setScoreModalOpen(false)} type="button">
-              Annuler
-            </Button>
-            <Button type="submit" isLoading={scoreMutation.isPending}>
-              Enregistrer
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Upload Document Modal */}
-      <Modal
-        isOpen={uploadDocOpen}
-        onClose={() => setUploadDocOpen(false)}
-        title="Téléverser un document"
-      >
-        <form
-          onSubmit={handleUpload((data) => {
-            const formData = new FormData();
-            formData.append('file', data.file[0]);
-            formData.append('offer_call', id);
-            formData.append('is_sensitive', data.is_sensitive ? 'true' : 'false');
-            uploadMutation.mutate(formData);
-          })}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fichier <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="file"
-              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-brand-navy hover:file:bg-orange-100"
-              {...regUpload('file', { required: true })}
-            />
-          </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              className="rounded border-gray-300 text-brand-navy focus:ring-brand-navy"
-              {...regUpload('is_sensitive')}
-            />
-            Document sensible
-          </label>
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setUploadDocOpen(false)} type="button">
-              Annuler
-            </Button>
-            <Button type="submit" isLoading={uploadMutation.isPending}>
-              Téléverser
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {action && <TransitionModal offer={offer} action={action} onClose={() => setAction(null)} />}
+      {uploadOpen && (
+        <UploadModal offerId={id} canSeeFinancial={isManager} onClose={() => setUploadOpen(false)} />
+      )}
     </div>
   );
 }
