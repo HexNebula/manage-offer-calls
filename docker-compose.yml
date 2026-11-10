@@ -44,7 +44,7 @@ services:
     volumes:
       - media_data:/app/media
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"  # not reachable from outside: all traffic goes through nginx
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 8000)); s.close()"]
       interval: 10s
@@ -93,6 +93,8 @@ services:
       dockerfile: Dockerfile
     container_name: offres_frontend
     restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: http://backend:8000
     ports:
       - "3000:3000"
     healthcheck:
