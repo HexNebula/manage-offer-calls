@@ -32,3 +32,19 @@ class IsAnalystOrAbove(BasePermission):
             and request.user.is_authenticated
             and request.user.role in ('ANALYST', 'MANAGER', 'ADMIN')
         )
+
+
+def can_see_financial(user):
+    """N+ONE's price is only visible to MANAGER and ADMIN (least privilege)."""
+    return user.is_authenticated and user.role in ('MANAGER', 'ADMIN')
+
+
+class IsViewerOrAbove(BasePermission):
+    """Allow access to all authenticated internal users (VIEWER and above)."""
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in ('VIEWER', 'ANALYST', 'MANAGER', 'ADMIN')
+        )

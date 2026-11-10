@@ -13,12 +13,17 @@ def generate_reference_number():
 
 
 class OfferCall(models.Model):
+    """A tender published by a buyer, that N+ONE tracks and may answer."""
+
     STATUS_CHOICES = [
-        ('DRAFT', 'Draft'),
-        ('PUBLISHED', 'Published'),
-        ('EVALUATION', 'Evaluation'),
-        ('AWARDED', 'Awarded'),
-        ('CANCELLED', 'Cancelled'),
+        ('DETECTED', 'Detected'),        # spotted, waiting for the Go / No-Go decision
+        ('PREPARING', 'Preparing'),      # Go: the bid is being prepared
+        ('REVIEW', 'Internal review'),
+        ('SUBMITTED', 'Submitted'),      # bid deposited on the buyer's portal, waiting for the result
+        ('WON', 'Won'),
+        ('LOST', 'Lost'),
+        ('NO_GO', 'No-Go'),
+        ('CANCELLED', 'Cancelled'),      # cancelled or declared unsuccessful by the buyer
     ]
 
     CATEGORY_CHOICES = [
@@ -29,23 +34,45 @@ class OfferCall(models.Model):
     ]
 
     VALID_TRANSITIONS = {
-        'DRAFT': ['PUBLISHED', 'CANCELLED'],
-        'PUBLISHED': ['EVALUATION', 'CANCELLED'],
-        'EVALUATION': ['AWARDED', 'CANCELLED'],
-        'AWARDED': [],
+        'DETECTED': ['PREPARING', 'NO_GO', 'CANCELLED'],
+        'PREPARING': ['REVIEW', 'CANCELLED'],
+        'REVIEW': ['SUBMITTED', 'PREPARING', 'CANCELLED'],
+        'SUBMITTED': ['WON', 'LOST', 'CANCELLED'],
+        'WON': [],
+        'LOST': [],
+        'NO_GO': [],
         'CANCELLED': [],
     }
 
+    FINAL_STATUSES = ('WON', 'LOST', 'NO_GO', 'CANCELLED')
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reference_number = models.CharField(max_length=50, unique=True, blank=True)
+
+    # Tender, as published by the buyer
+    buyer = models.ForeignKey('buyers.Buyer', on_delete=models.PROTECT, related_name='offers')
+    buyer_reference = models.CharField(max_length=100, blank=True)
+    source_url = models.URLField(blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES)
     budget_estimate = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
-    published_at = models.DateTimeField(null=True, blank=True)
+    provisional_guarantee = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     submission_deadline = models.DateTimeField(null=True, blank=True)
-    evaluation_deadline = models.DateTimeField(null=True, blank=True)
+    opening_date = models.DateTimeField(null=True, blank=True)
+    site_visit_date = models.DateTimeField(null=True, blank=True)
+
+    # N+ONE's answer
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DETECTED')
+    bid_amount = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    # Result, filled when the buyer announces it
+    winner_name = models.CharField(max_length=255, blank=True)
+    winning_amount = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    our_rank = models.PositiveSmallIntegerField(null=True, blank=True)
+    outcome_reason = models.TextField(blank=True)
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

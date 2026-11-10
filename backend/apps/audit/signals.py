@@ -18,7 +18,6 @@ def _get_model_data(instance):
 
 def _register_signals():
     from apps.offers.models import OfferCall
-    from apps.candidates.models import Submission
     from apps.documents.models import Document
     from apps.audit.models import AuditLog
 
@@ -40,26 +39,6 @@ def _register_signals():
             resource_type='OfferCall',
             resource_id=str(instance.id),
             changes={'reference_number': instance.reference_number},
-        )
-
-    @receiver(post_save, sender=Submission, weak=False, dispatch_uid='audit_submission_save')
-    def audit_submission_save(sender, instance, created, **kwargs):
-        AuditLog.objects.create(
-            user=None,
-            action='CREATE' if created else 'UPDATE',
-            resource_type='Submission',
-            resource_id=str(instance.id),
-            changes=_get_model_data(instance),
-        )
-
-    @receiver(post_delete, sender=Submission, weak=False, dispatch_uid='audit_submission_delete')
-    def audit_submission_delete(sender, instance, **kwargs):
-        AuditLog.objects.create(
-            user=None,
-            action='DELETE',
-            resource_type='Submission',
-            resource_id=str(instance.id),
-            changes={},
         )
 
     @receiver(post_save, sender=Document, weak=False, dispatch_uid='audit_document_save')

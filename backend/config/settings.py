@@ -29,13 +29,12 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     'apps.authentication',
+    'apps.buyers',
     'apps.offers',
-    'apps.candidates',
     'apps.documents',
     'apps.notifications',
     'apps.reports',
     'apps.audit',
-    'apps.portal',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -138,7 +137,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Appels d\'Offres API',
-    'DESCRIPTION': 'Secure web application for managing offer calls',
+    'DESCRIPTION': 'Secure web application for managing N+ONE\'s answers to tenders',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }

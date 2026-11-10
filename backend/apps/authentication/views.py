@@ -1,4 +1,6 @@
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,19 +11,24 @@ from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from .models import User
 from .serializers import LoginSerializer, UserSerializer, UserUpdateSerializer, CreateUserSerializer
 from .permissions import IsAdminRole
+from apps.audit.utils import get_client_ip
 
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        return x_forwarded_for.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR')
+def _client_ip_key(group, request):
+    return get_client_ip(request)
 
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
+    # Second layer behind nginx's limit_req; keyed on the real client IP, not the proxy's.
+    @method_decorator(ratelimit(key=_client_ip_key, rate='10/m', method='POST', block=False))
     def post(self, request):
+        if getattr(request, 'limited', False):
+            return Response(
+                {'error': 'Too many login attempts. Try again in a minute.'},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

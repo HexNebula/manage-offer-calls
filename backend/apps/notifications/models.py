@@ -9,7 +9,7 @@ class Notification(models.Model):
         ('DEADLINE_APPROACHING', 'Deadline Approaching'),
         ('STATUS_CHANGED', 'Status Changed'),
         ('ASSIGNED', 'Assigned'),
-        ('SUBMISSION_RECEIVED', 'Submission Received'),
+        ('DOCUMENT_EXPIRING', 'Document Expiring'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

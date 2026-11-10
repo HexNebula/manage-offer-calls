@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.http import StreamingHttpResponse
+from django.utils.dateparse import parse_date
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +12,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Document
 from .serializers import DocumentSerializer
 from .encryption import encrypt_file, decrypt_file, get_encryption_key
-from apps.authentication.permissions import IsAnalystOrAbove
+from apps.audit.utils import create_audit_log
+from apps.authentication.permissions import IsAnalystOrAbove, can_see_financial
 
 
 ALLOWED_MIME_TYPES = [
@@ -23,23 +25,7 @@ ALLOWED_MIME_TYPES = [
 MAX_UPLOAD_SIZE = getattr(settings, 'MAX_UPLOAD_SIZE', 10 * 1024 * 1024)
 
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        return x_forwarded_for.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR')
-
-
-def create_audit_log(user, action, resource_type, resource_id, changes=None, ip_address=None):
-    from apps.audit.models import AuditLog
-    AuditLog.objects.create(
-        user=user,
-        action=action,
-        resource_type=resource_type,
-        resource_id=str(resource_id),
-        changes=changes or {},
-        ip_address=ip_address,
-    )
+CATEGORIES = [c for c, _ in Document.CATEGORY_CHOICES]
 
 
 class DocumentUploadView(APIView):
@@ -64,11 +50,35 @@ class DocumentUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        category = request.data.get('category', 'TECHNICAL')
+        if category not in CATEGORIES:
+            return Response({'error': f'Invalid category. Allowed: {", ".join(CATEGORIES)}.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if category == 'FINANCIAL' and not can_see_financial(request.user):
+            return Response({'error': 'Only managers can handle financial documents.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        expires_at = None
+        if request.data.get('expires_at'):
+            expires_at = parse_date(request.data['expires_at'])
+            if not expires_at:
+                return Response({'error': 'expires_at must be a date (YYYY-MM-DD).'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        offer_call = None
+        offer_call_id = request.data.get('offer_call')
+        if offer_call_id:
+            from apps.offers.models import OfferCall
+            offer_call = OfferCall.objects.filter(pk=offer_call_id).first()
+            if not offer_call:
+                return Response({'error': 'Offer call not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         file_data = uploaded_file.read()
 
         checksum = hashlib.sha256(file_data).hexdigest()
 
-        is_sensitive = request.data.get('is_sensitive', 'false').lower() == 'true'
+        # The financial offer is always encrypted, whatever the client asks.
+        is_sensitive = request.data.get('is_sensitive', 'false').lower() == 'true' or category == 'FINANCIAL'
         is_encrypted = False
         data_to_save = file_data
 
@@ -96,29 +106,10 @@ class DocumentUploadView(APIView):
 
         relative_path = os.path.relpath(file_path, settings.MEDIA_ROOT)
 
-        offer_call_id = request.data.get('offer_call')
-        submission_id = request.data.get('submission')
-
-        offer_call = None
-        submission = None
-
-        if offer_call_id:
-            from apps.offers.models import OfferCall
-            try:
-                offer_call = OfferCall.objects.get(pk=offer_call_id)
-            except OfferCall.DoesNotExist:
-                return Response({'error': 'Offer call not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if submission_id:
-            from apps.candidates.models import Submission as SubmissionModel
-            try:
-                submission = SubmissionModel.objects.get(pk=submission_id)
-            except SubmissionModel.DoesNotExist:
-                return Response({'error': 'Submission not found.'}, status=status.HTTP_404_NOT_FOUND)
-
         document = Document.objects.create(
             offer_call=offer_call,
-            submission=submission,
+            category=category,
+            expires_at=expires_at,
             uploaded_by=request.user,
             file_name=uploaded_file.name,
             file_path=relative_path,
@@ -133,8 +124,8 @@ class DocumentUploadView(APIView):
             action='CREATE',
             resource_type='Document',
             resource_id=document.id,
-            changes={'file_name': document.file_name, 'is_encrypted': is_encrypted},
-            ip_address=get_client_ip(request),
+            changes={'file_name': document.file_name, 'category': category, 'is_encrypted': is_encrypted},
+            request=request,
         )
 
         return Response(DocumentSerializer(document).data, status=status.HTTP_201_CREATED)
@@ -148,6 +139,9 @@ class DocumentDownloadView(APIView):
             document = Document.objects.get(pk=pk)
         except Document.DoesNotExist:
             return Response({'error': 'Document not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if document.category == 'FINANCIAL' and not can_see_financial(request.user):
+            return Response({'error': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         file_path = os.path.join(settings.MEDIA_ROOT, document.file_path)
         if not os.path.exists(file_path):
@@ -178,7 +172,7 @@ class DocumentDownloadView(APIView):
             resource_type='Document',
             resource_id=document.id,
             changes={'file_name': document.file_name},
-            ip_address=get_client_ip(request),
+            request=request,
         )
 
         def file_iterator(data, chunk_size=8192):
@@ -218,7 +212,7 @@ class DocumentDeleteView(APIView):
             resource_type='Document',
             resource_id=document.id,
             changes={'file_name': document.file_name},
-            ip_address=get_client_ip(request),
+            request=request,
         )
 
         document.delete()
@@ -235,9 +229,12 @@ class DocumentListView(APIView):
         if offer_call_id:
             queryset = queryset.filter(offer_call_id=offer_call_id)
 
-        submission_id = request.query_params.get('submission')
-        if submission_id:
-            queryset = queryset.filter(submission_id=submission_id)
+        category = request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+
+        if not can_see_financial(request.user):
+            queryset = queryset.exclude(category='FINANCIAL')
 
         serializer = DocumentSerializer(queryset, many=True)
         return Response(serializer.data)

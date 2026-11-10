@@ -14,9 +14,17 @@ from reportlab.platypus import (
 )
 from reportlab.lib.enums import TA_CENTER
 
-from apps.authentication.permissions import IsAnalystOrAbove
+from apps.audit.utils import get_client_ip
+from apps.authentication.permissions import IsAnalystOrAbove, can_see_financial
 from apps.offers.models import OfferCall
-from apps.candidates.models import Submission
+
+
+def _money(value):
+    return f'{value:,.2f} MAD' if value is not None else 'N/A'
+
+
+def _date(value):
+    return value.strftime('%Y-%m-%d %H:%M UTC') if value else 'N/A'
 
 
 def _build_styles():
@@ -59,27 +67,11 @@ def _build_styles():
     }
 
 
-STATUS_COLORS = {
-    'DRAFT': colors.HexColor('#6c757d'),
-    'PUBLISHED': colors.HexColor('#0d6efd'),
-    'EVALUATION': colors.HexColor('#fd7e14'),
-    'AWARDED': colors.HexColor('#198754'),
-    'CANCELLED': colors.HexColor('#dc3545'),
-}
-
-SUBMISSION_STATUS_COLORS = {
-    'RECEIVED': colors.HexColor('#0d6efd'),
-    'UNDER_REVIEW': colors.HexColor('#fd7e14'),
-    'ACCEPTED': colors.HexColor('#198754'),
-    'REJECTED': colors.HexColor('#dc3545'),
-}
-
-
 class OfferListReportView(APIView):
     permission_classes = [IsAnalystOrAbove]
 
     def get(self, request):
-        offers = OfferCall.objects.select_related('created_by', 'assigned_to').all().order_by('-created_at')
+        offers = OfferCall.objects.select_related('buyer', 'assigned_to').all().order_by('-created_at')
 
         status_filter = request.query_params.get('status')
         if status_filter:
@@ -96,7 +88,7 @@ class OfferListReportView(APIView):
             resource_type='OfferCall',
             resource_id='LIST',
             changes={'filters': {'status': status_filter, 'category': category_filter}},
-            ip_address=self._get_ip(request),
+            ip_address=get_client_ip(request),
         )
 
         buffer = io.BytesIO()
@@ -112,7 +104,7 @@ class OfferListReportView(APIView):
         styles = _build_styles()
         elements = []
 
-        elements.append(Paragraph('Appels d\'Offres — Liste des Dossiers', styles['title']))
+        elements.append(Paragraph('Appels d\'Offres suivis par N+ONE', styles['title']))
         elements.append(Paragraph(
             f'Generated on {timezone.now().strftime("%Y-%m-%d %H:%M UTC")} by {request.user.full_name}',
             styles['subtitle']
@@ -127,6 +119,9 @@ class OfferListReportView(APIView):
         for s, count in sorted(status_counts.items()):
             summary_data.append([s, str(count)])
         summary_data.append(['TOTAL', str(offers.count())])
+        decided = status_counts.get('WON', 0) + status_counts.get('LOST', 0)
+        if decided:
+            summary_data.insert(-1, ['WIN RATE', f'{100 * status_counts.get("WON", 0) / decided:.0f} %'])
 
         summary_table = Table(summary_data, colWidths=[60 * mm, 30 * mm])
         summary_table.setStyle(TableStyle([
@@ -146,22 +141,22 @@ class OfferListReportView(APIView):
 
         elements.append(Paragraph('Offer Calls', styles['section']))
 
-        table_data = [['Reference', 'Title', 'Status', 'Category', 'Budget', 'Deadline', 'Assigned To']]
+        table_data = [['Reference', 'Buyer', 'Title', 'Status', 'Estimate', 'Deadline', 'Assigned To']]
         for offer in offers:
             budget = f'{offer.budget_estimate:,.2f}' if offer.budget_estimate else 'N/A'
             deadline = offer.submission_deadline.strftime('%Y-%m-%d') if offer.submission_deadline else 'N/A'
             assigned = offer.assigned_to.full_name if offer.assigned_to else 'Unassigned'
             table_data.append([
                 offer.reference_number,
-                offer.title[:40] + '...' if len(offer.title) > 40 else offer.title,
+                offer.buyer.name[:25],
+                offer.title[:35] + '...' if len(offer.title) > 35 else offer.title,
                 offer.status,
-                offer.get_category_display(),
                 budget,
                 deadline,
                 assigned,
             ])
 
-        col_widths = [30 * mm, 50 * mm, 25 * mm, 30 * mm, 25 * mm, 25 * mm, 35 * mm]
+        col_widths = [28 * mm, 35 * mm, 45 * mm, 22 * mm, 25 * mm, 22 * mm, 30 * mm]
         main_table = Table(table_data, colWidths=col_widths, repeatRows=1)
         main_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a1a2e')),
@@ -189,25 +184,15 @@ class OfferListReportView(APIView):
         )
         return response
 
-    def _get_ip(self, request):
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            return x_forwarded_for.split(',')[0].strip()
-        return request.META.get('REMOTE_ADDR')
-
 
 class OfferDetailReportView(APIView):
     permission_classes = [IsAnalystOrAbove]
 
     def get(self, request, pk):
         try:
-            offer = OfferCall.objects.select_related('created_by', 'assigned_to').get(pk=pk)
+            offer = OfferCall.objects.select_related('buyer', 'created_by', 'assigned_to').get(pk=pk)
         except OfferCall.DoesNotExist:
             return Response({'error': 'Offer not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        submissions = Submission.objects.filter(offer_call=offer).select_related(
-            'candidate', 'evaluated_by'
-        ).order_by('-technical_score')
 
         from apps.audit.models import AuditLog
         AuditLog.objects.create(
@@ -216,7 +201,7 @@ class OfferDetailReportView(APIView):
             resource_type='OfferCall',
             resource_id=str(offer.id),
             changes={'reference': offer.reference_number},
-            ip_address=self._get_ip(request),
+            ip_address=get_client_ip(request),
         )
 
         buffer = io.BytesIO()
@@ -242,22 +227,23 @@ class OfferDetailReportView(APIView):
         elements.append(Paragraph('Offer Details', styles['section']))
         details_data = [
             ['Reference', offer.reference_number],
+            ['Buyer', offer.buyer.name],
+            ['Buyer Reference', offer.buyer_reference or 'N/A'],
             ['Title', offer.title],
             ['Status', offer.get_status_display()],
             ['Category', offer.get_category_display()],
-            ['Budget Estimate', f'{offer.budget_estimate:,.2f}' if offer.budget_estimate else 'N/A'],
-            ['Published At', offer.published_at.strftime('%Y-%m-%d %H:%M UTC') if offer.published_at else 'N/A'],
-            ['Submission Deadline',
-             offer.submission_deadline.strftime('%Y-%m-%d %H:%M UTC') if offer.submission_deadline else 'N/A'],
-            ['Evaluation Deadline',
-             offer.evaluation_deadline.strftime('%Y-%m-%d %H:%M UTC') if offer.evaluation_deadline else 'N/A'],
+            ['Buyer Estimate', _money(offer.budget_estimate)],
+            ['Provisional Guarantee', _money(offer.provisional_guarantee)],
+            ['Submission Deadline', _date(offer.submission_deadline)],
+            ['Bid Opening', _date(offer.opening_date)],
+            ['Site Visit', _date(offer.site_visit_date)],
             ['Created By', offer.created_by.full_name],
             ['Assigned To', offer.assigned_to.full_name if offer.assigned_to else 'Unassigned'],
             ['Created At', offer.created_at.strftime('%Y-%m-%d %H:%M UTC')],
         ]
 
         details_table = Table(details_data, colWidths=[50 * mm, 120 * mm])
-        details_table.setStyle(TableStyle([
+        key_value_style = TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f8f9fa')),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
@@ -268,7 +254,8 @@ class OfferDetailReportView(APIView):
             ('RIGHTPADDING', (0, 0), (-1, -1), 6),
             ('TOPPADDING', (0, 0), (-1, -1), 4),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
+        ])
+        details_table.setStyle(key_value_style)
         elements.append(details_table)
         elements.append(Spacer(1, 8))
 
@@ -277,44 +264,18 @@ class OfferDetailReportView(APIView):
         elements.append(Spacer(1, 8))
 
         elements.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#dee2e6'), spaceAfter=8))
-        elements.append(Paragraph(f'Submissions ({submissions.count()})', styles['section']))
-
-        if submissions.exists():
-            sub_data = [['Company', 'Status', 'Technical Score', 'Financial Score', 'Avg Score', 'Evaluated By']]
-            for sub in submissions:
-                tech = float(sub.technical_score) if sub.technical_score is not None else None
-                fin = float(sub.financial_score) if sub.financial_score is not None else None
-                avg = f'{(tech + fin) / 2:.2f}' if (tech is not None and fin is not None) else 'N/A'
-                tech_str = f'{tech:.2f}' if tech is not None else 'N/A'
-                fin_str = f'{fin:.2f}' if fin is not None else 'N/A'
-                evaluator = sub.evaluated_by.full_name if sub.evaluated_by else 'N/A'
-                sub_data.append([
-                    sub.candidate.company_name[:30],
-                    sub.get_status_display(),
-                    tech_str,
-                    fin_str,
-                    avg,
-                    evaluator,
-                ])
-
-            sub_col_widths = [45 * mm, 30 * mm, 25 * mm, 25 * mm, 25 * mm, 30 * mm]
-            sub_table = Table(sub_data, colWidths=sub_col_widths, repeatRows=1)
-            sub_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a1a2e')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 8),
-                ('ALIGN', (2, 0), (4, -1), 'CENTER'),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dee2e6')),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-                ('LEFTPADDING', (0, 0), (-1, -1), 4),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 4),
-                ('TOPPADDING', (0, 0), (-1, -1), 3),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-            ]))
-            elements.append(sub_table)
-        else:
-            elements.append(Paragraph('No submissions received yet.', styles['body']))
+        elements.append(Paragraph('N+ONE Bid and Result', styles['section']))
+        bid_data = [
+            ['Bid Amount', _money(offer.bid_amount) if can_see_financial(request.user) else 'Restricted'],
+            ['Submitted At', _date(offer.submitted_at)],
+            ['Winner', offer.winner_name or 'N/A'],
+            ['Winning Amount', _money(offer.winning_amount)],
+            ['N+ONE Rank', str(offer.our_rank) if offer.our_rank else 'N/A'],
+            ['Outcome Reason', offer.outcome_reason or 'N/A'],
+        ]
+        bid_table = Table(bid_data, colWidths=[50 * mm, 120 * mm])
+        bid_table.setStyle(key_value_style)
+        elements.append(bid_table)
 
         doc.build(elements)
         buffer.seek(0)
@@ -324,9 +285,3 @@ class OfferDetailReportView(APIView):
             f'attachment; filename="offer_{offer.reference_number}_{timezone.now().strftime("%Y%m%d")}.pdf"'
         )
         return response
-
-    def _get_ip(self, request):
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            return x_forwarded_for.split(',')[0].strip()
-        return request.META.get('REMOTE_ADDR')

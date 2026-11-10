@@ -1,86 +1,75 @@
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import timedelta
+
+# Missing the submission deadline means automatic elimination, so it gets three reminders.
+SUBMISSION_REMINDERS = [(1, 'J-1'), (3, 'J-3'), (7, 'J-7')]
+DOCUMENT_EXPIRY_WINDOW_DAYS = 15
 
 
 class Command(BaseCommand):
-    help = 'Check for upcoming deadlines and create notifications for assigned users.'
+    help = 'Create reminders for upcoming tender deadlines and expiring documents.'
 
     def handle(self, *args, **options):
+        from apps.authentication.models import User
+        from apps.documents.models import Document
         from apps.offers.models import OfferCall
+
+        self.created = 0
+        now = timezone.now()
+
+        in_progress = OfferCall.objects.filter(
+            status__in=('DETECTED', 'PREPARING', 'REVIEW'), assigned_to__isnull=False,
+        )
+        for offer in in_progress:
+            if offer.submission_deadline and now <= offer.submission_deadline:
+                remaining = offer.submission_deadline - now
+                label = next((lbl for days, lbl in SUBMISSION_REMINDERS if remaining <= timedelta(days=days)), None)
+                if label:
+                    self._notify_once(
+                        offer.assigned_to, offer, f'submission deadline {label}',
+                        f'Tender {offer.reference_number} - {offer.title}: submission deadline {label} '
+                        f'({offer.submission_deadline:%Y-%m-%d %H:%M} UTC).',
+                    )
+            if offer.site_visit_date and now <= offer.site_visit_date <= now + timedelta(days=2):
+                self._notify_once(
+                    offer.assigned_to, offer, 'site visit',
+                    f'Tender {offer.reference_number}: site visit on {offer.site_visit_date:%Y-%m-%d %H:%M} UTC.',
+                )
+
+        submitted = OfferCall.objects.filter(
+            status='SUBMITTED', assigned_to__isnull=False,
+            opening_date__gte=now, opening_date__lte=now + timedelta(days=2),
+        )
+        for offer in submitted:
+            self._notify_once(
+                offer.assigned_to, offer, 'bid opening',
+                f'Tender {offer.reference_number}: bid opening on {offer.opening_date:%Y-%m-%d %H:%M} UTC.',
+            )
+
+        # An expired attestation in the file gets the whole bid rejected.
+        today = now.date()
+        expiring = Document.objects.filter(
+            expires_at__gte=today, expires_at__lte=today + timedelta(days=DOCUMENT_EXPIRY_WINDOW_DAYS),
+        )
+        managers = list(User.objects.filter(is_active=True, role__in=('MANAGER', 'ADMIN')))
+        for doc in expiring:
+            for manager in managers:
+                self._notify_once(
+                    manager, doc.offer_call, f'({doc.id}) expires',
+                    f'Document "{doc.file_name}" ({doc.id}) expires on {doc.expires_at:%Y-%m-%d}.',
+                    notification_type='DOCUMENT_EXPIRING',
+                )
+
+        self.stdout.write(self.style.SUCCESS(f'Deadline check complete. {self.created} notifications created.'))
+
+    def _notify_once(self, recipient, offer, dedupe_key, message, notification_type='DEADLINE_APPROACHING'):
         from apps.notifications.models import Notification
 
-        now = timezone.now()
-        window_48h = now + timedelta(hours=48)
-
-        active_statuses = ('PUBLISHED', 'EVALUATION')
-        offers = OfferCall.objects.filter(status__in=active_statuses, assigned_to__isnull=False)
-
-        notifications_created = 0
-
-        for offer in offers:
-            # Check submission_deadline within 48 hours
-            if offer.submission_deadline:
-                if now <= offer.submission_deadline <= window_48h:
-                    hours_remaining = (offer.submission_deadline - now).total_seconds() / 3600
-                    label = '24h' if hours_remaining <= 24 else '48h'
-
-                    already_exists = Notification.objects.filter(
-                        recipient=offer.assigned_to,
-                        offer_call=offer,
-                        type='DEADLINE_APPROACHING',
-                        message__icontains=f'submission deadline in {label}',
-                    ).exists()
-
-                    if not already_exists:
-                        Notification.objects.create(
-                            recipient=offer.assigned_to,
-                            offer_call=offer,
-                            type='DEADLINE_APPROACHING',
-                            message=(
-                                f'Offer call {offer.reference_number} - {offer.title}: '
-                                f'submission deadline in {label} '
-                                f'({offer.submission_deadline.strftime("%Y-%m-%d %H:%M UTC")}).'
-                            ),
-                        )
-                        notifications_created += 1
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f'Created submission deadline notification for {offer.reference_number} ({label})'
-                            )
-                        )
-
-            # Check evaluation_deadline within 48 hours
-            if offer.evaluation_deadline:
-                if now <= offer.evaluation_deadline <= window_48h:
-                    hours_remaining = (offer.evaluation_deadline - now).total_seconds() / 3600
-                    label = '24h' if hours_remaining <= 24 else '48h'
-
-                    already_exists = Notification.objects.filter(
-                        recipient=offer.assigned_to,
-                        offer_call=offer,
-                        type='DEADLINE_APPROACHING',
-                        message__icontains=f'evaluation deadline in {label}',
-                    ).exists()
-
-                    if not already_exists:
-                        Notification.objects.create(
-                            recipient=offer.assigned_to,
-                            offer_call=offer,
-                            type='DEADLINE_APPROACHING',
-                            message=(
-                                f'Offer call {offer.reference_number} - {offer.title}: '
-                                f'evaluation deadline in {label} '
-                                f'({offer.evaluation_deadline.strftime("%Y-%m-%d %H:%M UTC")}).'
-                            ),
-                        )
-                        notifications_created += 1
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f'Created evaluation deadline notification for {offer.reference_number} ({label})'
-                            )
-                        )
-
-        self.stdout.write(
-            self.style.SUCCESS(f'Deadline check complete. {notifications_created} notifications created.')
-        )
+        if Notification.objects.filter(
+            recipient=recipient, offer_call=offer, type=notification_type, message__icontains=dedupe_key,
+        ).exists():
+            return
+        Notification.objects.create(recipient=recipient, offer_call=offer, type=notification_type, message=message)
+        self.created += 1

@@ -12,7 +12,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = [
-            'id', 'offer_call', 'offer_call_reference', 'submission', 'uploaded_by',
+            'id', 'offer_call', 'offer_call_reference', 'category', 'expires_at', 'uploaded_by',
             'file_name', 'file_path', 'file_size', 'mime_type', 'is_encrypted',
             'uploaded_at', 'checksum',
         ]
