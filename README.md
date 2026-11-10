@@ -94,4 +94,4 @@ docker compose exec backend pytest --tb=short -v
 
 Internship project at N+ONE DATACENTERS, Casablanca  
 MADANI Anas — ENSIAS 2nd year (Génie Logiciel)  
-August 6 – September 6, 2025
+August 6 – September 6, 2024
